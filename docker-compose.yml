@@ -23,11 +23,18 @@ services:
       - ./config/virtuoso/virtuoso.ini:/data/virtuoso.ini
     restart: always
   resource:
-    image: semtech/mu-cl-resources:1.25.0
+    image: semtech/mu-cl-resources:1.20.0
     links:
       - database:database
     volumes:
       - ./config/resources:/config
+    restart: always
+  deltanotifier:
+    image: semtech/mu-delta-notifier:0.3.0
+    volumes:
+      - ./config/delta:/config
+    labels:
+      - "logging=true"
     restart: always
   frontend:
     # Skip docker hub and just build it, it's a hackathon...

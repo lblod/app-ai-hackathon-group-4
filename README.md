@@ -12,6 +12,8 @@ We used this to represent our monument instances, called 'aanduidingsobject' in 
 
 However, it is worth pointing out that there seem to be some issues with this model? The predicates don't seem to be typical clean uris and some types even use spaces in the URI. In the limited time we had to study this model it also feels like we would need some extensions in this model to make it truly useable. Many types are defined but don't have properties for instance and leave much up for interpretation. For the Location type we already used locn:Address to subclass from prov:Location.
 
+Another important issue is that there is no good link between Besluit instances and Mens Gemaakt Object instances in the model. We created our own for in the ext namespace for now, but since this has to be reusable this namespace should be avoided. If this system were to go in production, it would be a good opportunity to align the Cultureel Erfgoed Object model with the business case and maybe refine or extend it.
+
 ## [Cultureel Erfgoed Event](https://data.vlaanderen.be/doc/applicatieprofiel/cultureel-erfgoed-event/)
 
 This wasn't used yet. Not only did we have to prioritize, we also found some difficulties applying this model to this particular case, e.g. the model does say what actions are taken but no which actions are allowed... So we would need severe extensions anyway

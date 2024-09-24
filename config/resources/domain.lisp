@@ -1,9 +1,15 @@
 (in-package :mu-cl-resources)
 
-(setf *include-count-in-paginated-responses* t)
-(setf *supply-cache-headers-p* t)
-(setf sparql:*experimental-no-application-graph-for-sudo-select-queries* t)
+(defparameter *cache-count-queries* nil)
+(defparameter *supply-cache-headers-p* t
+  "when non-nil, cache headers are supplied.  this works together with mu-cache.")
 (setf *cache-model-properties-p* t)
+(defparameter *include-count-in-paginated-responses* t
+  "when non-nil, all paginated listings will contain the number
+   of responses in the result object's meta.")
+(defparameter *max-group-sorted-properties* nil)
+(defparameter sparql:*experimental-no-application-graph-for-sudo-select-queries* t)
+(setf *fetch-all-types-in-construct-queries* t)
 
 ;; reading in the domain.json
 
@@ -82,7 +88,7 @@
   :features '(include-uri)
   :on-path "annotations")
 
-(define-resource annotation-feedback (annotation)
+(define-resource annotation-feedback ()
   :class (s-prefix "ext:AnnotationFeedback")
   :properties `((:feedback :string ,(s-prefix "ext:feedback"))
                 ;; simply +1 or -1 for now, see readme for explanation on shortcut
