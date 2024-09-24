@@ -22,7 +22,7 @@
                 (:style :string ,(s-prefix "ext:artStyle"))
                 ;; should actually be instance of type http://www.cidoc-crm.org/cidoc-crm/E65_Creation
                 (:creation :datetime ,(s-prefix "dct:created")))
-  :resource-base (s-url "http://data.lblod.info/id/aanduidingsobjecten")
+  :resource-base (s-url "http://data.lblod.info/id/aanduidingsobjecten/")
   ;; address and typology should be has many in theory i guess but shortcutting for hackathon
   :has-one `((address :via ,(s-prefix "cidoc:P53_has_former_or_current_location")
                               :as "address")
@@ -60,7 +60,7 @@
                         :as "kind"))
   ;; the uri is the location of the file
   :features '(include-uri)
-  :on-path "besluiten")
+  :on-path "besluits")
 
 ;; model says to use https://data.vlaanderen.be/doc/applicatieprofiel/cultureel-erfgoed-object/#Type Entiteit but this seems too scary with the space
 (define-resource concept ()
