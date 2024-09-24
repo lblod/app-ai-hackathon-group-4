@@ -33,9 +33,9 @@ We currently are rather basic in our use of this model. It could be extended wit
 
 Normally this belongs in its own service. For this hackathon, we started out doing this from the frontend side as it saves us time (we can use the resources json-api to convert things).
 
-## No mu-authorization
+## Mu-authorization: all public
 
-We didn't use mu-authorization (or mu-sparql-parser) for this hackathon. This means no deltas and no access control. In a real project this would probably not be acceptable, but it saved us a lot of time during the hackathon.
+We put everything in the public graph of mu-authorization and don't care about users signing in. In the real application it would be better to do this properly so at least annotation-feedback is attributed to the right user and (maybe) certain monuments are only accessible by certain users, possibly depending on the region they are in?
 
 ## Supplying feedback for ai generated content
 
