@@ -2,6 +2,10 @@ This project was developed as part of a hackathon. Please take everything you se
 
 # Architecture
 
+The ollama service provides as an endpoint for the locally running llm model
+The llm service uses the ollama service processes documents, prompts the llm model via the ollama service, and stores the resulting annotated objects into the triplestore
+
+
 # Semantic Model
 
 For the semantic model, we considered the following application profiles:

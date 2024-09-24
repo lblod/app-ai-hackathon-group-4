@@ -77,10 +77,17 @@ class TranslationInput(BaseModel):
     language: str
     format: Dict[str, str]
 
+class KeywordExtractionInput(BaseModel):
+    text: str
+
 class ClassificationInputTaxonomy(BaseModel):
     taxonomy: Dict[str, List[str]]
 
+class SummarizationInput(BaseModel):
+    text: str
 
+class RawPromptInput(BaseModel):
+    prompt: str
 
 # methods for storing the results of the tasks
 async def batch_update(queries, request : Request):
@@ -467,7 +474,7 @@ async def extract_keywords_text(text: str):
         {"keywords": ["Computer Vision", "Natural Language Processing", "Machine Learning"]}
     """
     try:
-        keywords = abb_llm.extract_keywords_text(keyword_extraction_input.text)
+        keywords = abb_llm.extract_keywords_text(KeywordExtractionInput.text)
         return keywords
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -511,3 +518,68 @@ async def classify_text(text: str, classification_taxonomy: ClassificationInputT
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/summarize", tags=["text"])
+async def summarize_text(summarization_input: SummarizationInput):
+    """
+    Summarizes the given text.
+
+    Args:
+        summarization_input (SummarizationInput): An object containing the text to be summarized.
+
+    Returns:
+        dict: A dictionary containing the summarized text.
+
+    Raises:
+        HTTPException: If there's an error during the summarization.
+
+    Example:
+        To use this endpoint, you can send a POST request to `/summarize` with a JSON body like this:
+
+        {
+            "text": "This is a long text that needs to be summarized."
+        }
+
+        The response will be a dictionary containing the summarized text, like this:
+
+        {
+            "summary": "This is a summary."
+        }
+    """
+    try:
+        summary = abb_llm.summarize_text(summarization_input.text)
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/raw_prompt", tags=["text"])
+async def raw_prompt(raw_prompt_input: RawPromptInput):
+    """
+    Processes a raw prompt and returns the response.
+
+    Args:
+        raw_prompt_input (RawPromptInput): An object containing the raw prompt.
+
+    Returns:
+        dict: A dictionary containing the response to the raw prompt.
+
+    Raises:
+        HTTPException: If there's an error during the processing of the raw prompt.
+
+    Example:
+        To use this endpoint, you can send a POST request to `/raw_prompt` with a JSON body like this:
+
+        {
+            "prompt": "Tell me a joke."
+        }
+
+        The response will be a dictionary containing the response to the raw prompt, like this:
+
+        {
+            "response": "Why did the scarecrow win an award? Because he was outstanding in his field!"
+        }
+    """
+    try:
+        response = abb_llm.process_raw_prompt(raw_prompt_input.prompt)
+        return response
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
