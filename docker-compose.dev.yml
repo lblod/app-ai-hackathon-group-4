@@ -3,12 +3,14 @@ services:
     restart: "no"
     ports:
       - "80:80"
-  database:
+  virtuoso:
     restart: "no"
     ports:
       - "8890:8890"
   # Override the frontend and run it locally instead to avoid need to build image
   frontend:
+    restart: "no"
+  database:
     restart: "no"
   dispatcher:
     restart: "no"
