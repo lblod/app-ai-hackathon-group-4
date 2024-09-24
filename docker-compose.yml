@@ -5,12 +5,14 @@ services:
       SESSION_COOKIE_SECURE: "on"
     links:
       - dispatcher:dispatcher
+    restart: always
   dispatcher:
     image: semtech/mu-dispatcher:2.1.0-beta.2
     links:
       - resource:resource
     volumes:
       - ./config/dispatcher:/config
+    restart: always
   database:
     image: redpencil/virtuoso:1.2.0-rc.1
     environment:
@@ -19,12 +21,24 @@ services:
     volumes:
       - ./data/db:/data
       - ./config/virtuoso/virtuoso.ini:/data/virtuoso.ini
+    restart: always
   resource:
     image: semtech/mu-cl-resources:1.25.0
     links:
       - database:database
     volumes:
       - ./config/resources:/config
+    restart: always
   frontend:
     # Skip docker hub and just build it, it's a hackathon...
     build: ../frontend-ai-hackathon-group-4
+    restart: always
+  migrations:
+    image: semtech/mu-migrations-service:0.6.0
+    environment:
+      MU_SPARQL_TIMEOUT: "300"
+    volumes:
+      - ./config/migrations:/data/migrations
+    labels:
+      - "logging=true"
+    restart: always

@@ -1,0 +1,31 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix skos:	<http://www.w3.org/2004/02/skos/core#>.
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#>.
+@prefix mu:   <http://mu.semte.ch/vocabularies/core/>.
+@prefix conceptschemes: <http://lblod.data.gift/concept-schemes/>.
+@prefix annot:  <http://data.vlaanderen.be/id/concept/annotatie-types/>.
+@prefix ext: <http://mu.semte.ch/vocabularies/ext/>.
+
+conceptschemes:annotation-types
+  rdf:type skos:ConceptScheme;
+	mu:uuid	"d64890bb-332e-4ce1-8b5e-c8772ba534a0";
+	skos:prefLabel "AI Annotation Types".
+
+annot:e2d9bd23-e478-411b-a461-ad2fe9b13e30
+  mu:uuid "e2d9bd23-e478-411b-a461-ad2fe9b13e30";
+  a skos:Concept, ext:AnnotationType;
+  skos:prefLabel "AI Samenvatting" ;
+  skos:topConceptOf conceptschemes:annotation-types;
+  skos:inScheme conceptschemes:annotation-types.
+annot:315aa3eb-06bd-4e03-ab0c-48c8d5449e92
+  mu:uuid "315aa3eb-06bd-4e03-ab0c-48c8d5449e92";
+  a skos:Concept, ext:AnnotationType;
+  skos:prefLabel "AI Samenvatting: toegelaten acties" ;
+  skos:topConceptOf conceptschemes:annotation-types;
+  skos:inScheme conceptschemes:annotation-types.
+annot:b9c6e507-08b7-4715-9c85-34f04270179d
+  mu:uuid "b9c6e507-08b7-4715-9c85-34f04270179d";
+  a skos:Concept, ext:AnnotationType;
+  skos:prefLabel "AI Samenvatting: aanvraagplichtige acties";
+  skos:topConceptOf conceptschemes:annotation-types;
+  skos:inScheme conceptschemes:annotation-types.
