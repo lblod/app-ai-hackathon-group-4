@@ -1,30 +1,21 @@
-# mu-project
+This project was developed as part of a hackathon. Please take everything you see here with a grain of salt
 
-Bootstrap a mu.semte.ch microservices environment in three easy steps.
+# Architecture
 
-## Quickstart an mu-project
+# Semantic Model
 
-> [INFO]
-> This project was created by running `mu project new awesome-project-name`.  If read on GitHub under mu-semtech/mu-project then it is the template repository for a new project, use `mu project new` instead.
+For the semantic model, we considered the following application profiles:
 
-Setting up your environment is done in three easy steps:
-1. First configure the running microservices and their names in `docker-compose.yml`
-2. Then, configure how requests are dispatched in `config/dispatcher.ex`
-3. Lastly, simply start the docker-compose.
+## [Cultureel Erfgoed Object](https://data.vlaanderen.be/doc/applicatieprofiel/cultureel-erfgoed-object/)
 
-### Hooking things up with docker-compose
+## [Cultureel Erfgoed Event](https://data.vlaanderen.be/doc/applicatieprofiel/cultureel-erfgoed-event/)
 
-Alter the `docker-compose.yml` file so it contains all microservices you need.  The example content should be clear, but you can find more information in the [Docker Compose documentation](https://docs.docker.com/compose/).  Don't remove the `identifier` and `db` container, they are respectively the entry-point and the database of your application.  Don't forget to link the necessary microservices to the dispatcher and the database to the microservices.
+## [Slimme Raadpleeg Omgeving](https://data.vlaanderen.be/doc/applicatieprofiel/slimmeraadpleegomgeving/)
 
-### Configure the dispatcher
+# AI Model
 
-Next, alter the file `config/dispatcher/dispatcher.ex` based on the example that is there by default.  Dispatch requests to the necessary microservices based on the names you used for the microservice.
+# Assumptions, Shortcuts and Hacks
 
-### Boot up the system
+## Turning API responses into resource objects
 
-Boot your microservices-enabled system using docker-compose.
-
-    cd /path/to/mu-project
-    docker-compose up
-
-You can shut down using `docker-compose stop` and remove everything using `docker-compose rm`.
+Normally this belongs in its own service. For this hackathon, we started out doing this from the frontend side as it saves us time (we can use the resources json-api to convert things).
