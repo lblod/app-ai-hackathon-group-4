@@ -1,4 +1,11 @@
 services:
+
+  llm:
+    ports:
+      - "2000:80"
+  ollama:
+    ports:
+      - "11434:11434"
   identifier:
     restart: "no"
     ports:
