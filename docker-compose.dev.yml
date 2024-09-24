@@ -5,3 +5,6 @@ services:
   database:
     ports:
       - "8890:8890"
+  # Override the frontend and run it locally instead to avoid need to build image
+  frontend:
+    image: node:20-slim

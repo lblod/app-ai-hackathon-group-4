@@ -25,3 +25,6 @@ services:
       - database:database
     volumes:
       - ./config/resources:/config
+  frontend:
+    # Skip docker hub and just build it, it's a hackathon...
+    build: ../frontend-ai-hackathon-group-4
