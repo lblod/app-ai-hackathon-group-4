@@ -304,91 +304,50 @@ class LLM:
     
         return response.choices[0].message.content
     
-    # DEMO LOKAAL BESLIST
 
-    def get_agenda_items(self, search_content, search_endpoint, location_id=None, max_results=2):
-        # Define the URL and query parameters
+    # TASK: summarization
 
-        params = {
-            "page[size]": max_results,
-            "page[number]": 0,
-            "filter[:fuzzy:search_content]": search_content,
-            "sort[session_planned_start.field]": "desc"
-        }
+    def generate_summarization_task(self, context, include_system_message=True):
 
-        if location_id is not None:
-            params["filter[:has:search_location_id]"] = "t"
-            params["filter[:terms:search_location_id]"] = location_id
-
-        # Define the headers
-        headers = {
-            "Accept": "*/*",
-            "Accept-Encoding": "gzip, deflate, br, zstd",
-            "Accept-Language": "en-US,en;q=0.9,nl;q=0.8,fr;q=0.7,it;q=0.6,es;q=0.5",
-            "Cache-Control": "no-cache",
-            "Referer": "https://lokaalbeslist.vlaanderen.be/agendapunten?gemeentes=Gent&trefwoord=blaarmeersen",
-            "Sec-Ch-Ua": '"Google Chrome";v="125", "Chromium";v="125", "Not.A/Brand";v="24"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
-        }
-
-        # Optionally, include cookies if needed
-        cookies = {
-            "shortscc": "2",
-            "proxy_session": "QTEyOEdDTQ.el1yihjiovv1IzOv4xxDo-2k783xBilgm6DzC8M2hNHVONzg6cz0Q_toOg4.XIPR-bEY0du7d-P0.phHm39QaT8g7-y7fxaQ9XYA5M0D37dxxvxmJSbRGWk3nVHXjGbWanMk8nrl6rXQiKfW7M8VvPhezCzWQgSxXCcrRvQMkJyYqt6ggnhD-A6Bmji1NnUhYmbDO9oIvtSnBIkg5d3DLwlvMGJOjJDGu66wkVLezSXSVGQbShnMv9yMv8FN0IDHruobpWWYr1JQcj71pAYL-WCCFS2KjuBDL.vIGRc-k1TAO5I922gCr_vwDnt"
-        }
-
-        # Make the GET request
-        response = requests.get(search_endpoint, headers=headers, params=params, cookies=cookies)
-
-        # Check the response status
-        if response.status_code == 200:
-            # Return the response content
-            return response.json()
-        else:
-            raise Exception(f"Request failed with status code: {response.status_code}")
-
-    def process_results(self, results):
-        processed_results = []
-        for result in results:
-            if result['type'] == 'agenda-item':
-                title = result['attributes']['title']
-                description = result['attributes']['description']
-
-                # Use the resolution title and description if the title and description are None
-                if title is None:
-                    title = result['attributes']['resolution_title']
-                if description is None:
-                    description = result['attributes']['resolution_description']
-
-                processed_result = {
-                    'title': title,
-                    'description': description,
-                    'uuid': result['id'],
-                    'uri': result['attributes']['uri']
-                }
-                processed_results.append(processed_result)
-        return processed_results
-
-    def get_context_for_llm(self, search_term, search_endpoint, location_id = None, max_results=2):
-        # Get the agenda items related to the search term
-        agenda_items = self.get_agenda_items(search_term, search_endpoint, location_id, max_results)
-        num_results = agenda_items['count']
-        formatted_results = self.process_results(agenda_items['data'])
+        task = """
+        You are an expert in summarizing text data based on a provided context. Your task is to summarize the given text provided in the context.
         
-        # Format the results into a string
-        context = f"Found {min(num_results, len(formatted_results))} agenda items:\n"
-        for i, result in enumerate(formatted_results, start=1):
-            context += f"{i}. {result['title']} ({result['uri']})\n"
-            if result['description']:
-                context += f"\t+ Description: {result['description']}\n"
+        Summarize the document provided in context. Ensure that the summary is concise and captures the main points of the document. 
+        Keep the text in its original language and do not translate the names of people, places, or organizations.
+        
+        Desired Output:
+        Output the summary in a JSON format, like this:
+        {
+            "summary": "Your summary here."
+        }
+        """
 
-        # Return the context
-        return context, formatted_results
+        prompt, system = self.generate_json_prompt(task, context, include_system_message)
 
+        return prompt, system, task, {"context": context}
+    
+    def summarize_text(self, text):
+        # Generate the classification task
+        prompt_string, system_message, _, _ = self.generate_summarization_task(text)
 
+        # Generate the response using OpenAI (or any other method)
+        response = self.generate_response(system_message, prompt_string, stream=False, json_mode=True)
 
+        return response.choices[0].message.content
+    
+
+    # TASK: general prompting
+
+    def generate_prompt_task(self, context, include_system_message=True):
+
+        task = """
+        You are an expert in asnwering prompts based on a provided context. Your task is to interpret the given prompt and generate a response based on the context provided.
+                
+        Desired Output:
+        
+        
+        """
+
+        prompt, system = self.generate_json_prompt(task, context, include_system_message)
+
+        return prompt, system, task, {"context": context}
