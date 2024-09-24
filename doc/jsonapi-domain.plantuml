@@ -1,8 +1,9 @@
 @startuml
 set namespaceSeparator none
-class "agents"
-"agents" : name
-"agents" --> "*" "annotations" : creator > 
+class "annotation-feedbacks"
+"annotation-feedbacks" : feedback
+"annotation-feedbacks" : rating
+"annotations" <|-- "annotation-feedbacks"
 class "annotations"
 "annotations" : body
 "annotations" : created
@@ -10,6 +11,9 @@ class "annotations"
 "annotations" --> "1" "annotation-types" : annotation-type > 
 "annotations" --> "1" "agents" : creator > 
 "annotations" --> "1" "besluiten" : about > 
+class "agents"
+"agents" : name
+"agents" --> "*" "annotations" : creator > 
 class "aanduidingsobjects"
 "aanduidingsobjects" : title
 "aanduidingsobjects" : description
