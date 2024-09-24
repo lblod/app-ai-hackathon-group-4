@@ -1,0 +1,7 @@
+# List of useful overrides.
+# Copy to docker-compose.override.yml and comment out any that you don't want to use.
+services:
+  dispatcher:
+    volumes:
+      # Add a logging version of the dispatcher proxy to aid basic debugging
+      - ./tools/logging-proxy.ex:/app/lib/proxy.ex
