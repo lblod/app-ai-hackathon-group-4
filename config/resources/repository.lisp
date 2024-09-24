@@ -32,3 +32,9 @@
 ;; by them and that it shouldn't be used for permanent URIs.
 
 (add-prefix "ext" "http://mu.semte.ch/vocabularies/ext/")
+(add-prefix "cidoc" "http://www.cidoc-crm.org/cidoc-crm/")
+(add-prefix "prov" "http://www.w3.org/ns/prov#")
+(add-prefix "dct" "http://purl.org/dc/terms/")
+(add-prefix "locn" "http://www.w3.org/ns/locn#")
+(add-prefix "skos" "http://www.w3.org/2004/02/skos/core#")
+(add-prefix "adres" "http://data.vlaanderen.be/ns/adres#")

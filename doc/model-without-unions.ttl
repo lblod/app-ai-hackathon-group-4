@@ -1,0 +1,113 @@
+@prefix cms: <http://mu.semte.ch/vocabulary/cms/>.
+@prefix adres: <http://data.vlaanderen.be/ns/adres#>.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#>.
+@prefix locn: <http://www.w3.org/ns/locn#>.
+@prefix dct: <http://purl.org/dc/terms/>.
+@prefix prov: <http://www.w3.org/ns/prov#>.
+@prefix cidoc: <http://www.cidoc-crm.org/cidoc-crm/>.
+@prefix ext: <http://mu.semte.ch/vocabularies/ext/>.
+@prefix rm: <http://mu.semte.ch/vocabularies/logical-delete/>.
+@prefix typedLiterals: <http://mu.semte.ch/vocabularies/typed-literals/>.
+@prefix mu: <http://mu.semte.ch/vocabularies/core/>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix app: <http://mu.semte.ch/app/>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix dc: <http://purl.org/dc/elements/1.1/>.
+
+<http://mu.semte.ch/ontology> rdf:type owl:Ontology.
+<http://mu.semte.ch/ontology> dc:title "Generated resource ontology". 
+<http://mu.semte.ch/ontology> dc:description "Generated resource ontology". 
+
+cidoc:E22_Man-Made_Object rdf:type owl:Class;
+  rdfs:label "aanduidingsobject".
+locn:Address rdf:type owl:Class;
+   rdfs:subClassOf prov:Location;
+  rdfs:label "address".
+prov:Location rdf:type owl:Class;
+  rdfs:label "location".
+besluit:Besluit rdf:type owl:Class;
+  rdfs:label "besluit".
+skos:Concept rdf:type owl:Class;
+  rdfs:label "typology".
+
+cidoc:P102_has_title rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is cidoc:P102_has_title.";
+  rdfs:label "title";
+  rdfs:range rdfs:Literal;
+  rdfs:domain cidoc:E22_Man-Made_Object.
+cidoc:P3_has_note rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is cidoc:P3_has_note.";
+  rdfs:label "description";
+  rdfs:range rdfs:Literal;
+  rdfs:domain cidoc:E22_Man-Made_Object.
+dct:identifier rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is dct:identifier.";
+  rdfs:label "identifier";
+  rdfs:range rdfs:Literal;
+  rdfs:domain cidoc:E22_Man-Made_Object.
+ext:artStyle rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is ext:artStyle.";
+  rdfs:label "style";
+  rdfs:range rdfs:Literal;
+  rdfs:domain cidoc:E22_Man-Made_Object.
+dct:created rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is datetime.  Original predicate is dct:created.";
+  rdfs:label "creation";
+  rdfs:range rdfs:Literal;
+  rdfs:domain cidoc:E22_Man-Made_Object.
+dct:modified rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is datetime.  Original predicate is dct:modified.";
+  rdfs:label "location";
+  rdfs:range rdfs:Literal;
+  rdfs:domain cidoc:E22_Man-Made_Object.
+adres:gemeentenaam rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is adres:gemeentenaam.";
+  rdfs:label "municipality-name";
+  rdfs:range rdfs:Literal;
+  rdfs:domain locn:Address.
+locn:adminUnitL2 rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is locn:adminUnitL2.";
+  rdfs:label "province";
+  rdfs:range rdfs:Literal;
+  rdfs:domain locn:Address.
+locn:thoroughfare rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is locn:thoroughfare.";
+  rdfs:label "street-name";
+  rdfs:range rdfs:Literal;
+  rdfs:domain locn:Address.
+locn:postCode rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is locn:postCode.";
+  rdfs:label "postal-code";
+  rdfs:range rdfs:Literal;
+  rdfs:domain locn:Address.
+adres:Adresvoorstelling.busnummer rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is adres:Adresvoorstelling.busnummer.";
+  rdfs:label "bus-number";
+  rdfs:range rdfs:Literal;
+  rdfs:domain locn:Address.
+dct:title rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is dct:title.";
+  rdfs:label "title";
+  rdfs:range rdfs:Literal;
+  rdfs:domain besluit:Besluit.
+skos:prefLabel rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is skos:prefLabel.";
+  rdfs:label "title";
+  rdfs:range rdfs:Literal;
+  rdfs:domain skos:Concept.
+
+
+cidoc:P53_has_former_or_current_location rdf:type owl:ObjectProperty;
+  rdfs:comment "";
+  rdfs:label "address";
+  rdfs:domain cidoc:E22_Man-Made_Object;
+  rdfs:range locn:Address.
+cidoc:P2_has_type rdf:type owl:ObjectProperty;
+  rdfs:comment "";
+  rdfs:label "typology";
+  rdfs:domain cidoc:E22_Man-Made_Object;
+  rdfs:range skos:Concept.
+
+
+

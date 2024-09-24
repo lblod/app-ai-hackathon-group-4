@@ -1,0 +1,25 @@
+@startuml
+set namespaceSeparator none
+class "aanduidingsobjects"
+"aanduidingsobjects" : title
+"aanduidingsobjects" : description
+"aanduidingsobjects" : identifier
+"aanduidingsobjects" : style
+"aanduidingsobjects" : creation
+"aanduidingsobjects" : location
+"aanduidingsobjects" --> "1" "address-representations" : address > 
+"aanduidingsobjects" --> "1" "concepts" : typology > 
+class "address-representations"
+"address-representations" : municipality-name
+"address-representations" : province
+"address-representations" : street-name
+"address-representations" : postal-code
+"address-representations" : bus-number
+"address-representations" --> "*" "aanduidingsobjects" : references > 
+"NIL" <|-- "address-representations"
+class "NIL"
+class "besluiten"
+"besluiten" : title
+class "concepts"
+"concepts" : title
+@enduml
