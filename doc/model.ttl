@@ -131,10 +131,15 @@ dct:title rdf:type owl:DatatypeProperty;
   rdfs:domain besluit:Besluit.
 
 
+ext:hasFeedback rdf:type owl:FunctionalProperty, owl:ObjectProperty;
+  rdfs:comment "Names are feedback, - annotation.";
+  rdfs:label "feedback";
+  rdfs:domain _:union2;
+  rdfs:range ext:AnnotationFeedback.
 dct:type rdf:type owl:InverseFunctionalProperty, owl:ObjectProperty;
   rdfs:comment "Names are kind, annotation-type.";
   rdfs:label "kind";
-  rdfs:domain _:union2;
+  rdfs:domain _:union3;
   rdfs:range _:union1.
 dct:creator rdf:type owl:InverseFunctionalProperty, owl:ObjectProperty;
   rdfs:comment "Names are - creator, creator.";
@@ -163,5 +168,7 @@ _:union0 rdf:type owl:Class;
 _:union1 rdf:type owl:Class;
   owl:unionOf (ext:AnnotationType skos:Concept).
 _:union2 rdf:type owl:Class;
+  owl:unionOf (ext:AnnotationFeedback oa:Annotation).
+_:union3 rdf:type owl:Class;
   owl:unionOf (besluit:Besluit oa:Annotation).
 

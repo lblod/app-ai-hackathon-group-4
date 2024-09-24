@@ -86,7 +86,7 @@
                 (:rating :number ,(s-prefix "ext:rating")))
   :has-one `((annotation-feedback :via ,(s-prefix "ext:hasFeedback")
                                   :inverse t
-                                  :as "annotation")
+                                  :as "annotation"))
   :resource-base (s-url "http://data.lblod.info/id/annotation-feedbacks/")
   :features '(include-uri)
   :on-path "annotation-feedbacks")

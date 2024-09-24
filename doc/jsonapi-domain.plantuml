@@ -3,6 +3,7 @@ set namespaceSeparator none
 class "annotation-feedbacks"
 "annotation-feedbacks" : feedback
 "annotation-feedbacks" : rating
+"annotation-feedbacks" --> "1" "annotation-feedbacks" : annotation > 
 "annotations" <|-- "annotation-feedbacks"
 class "annotations"
 "annotations" : body
@@ -11,6 +12,7 @@ class "annotations"
 "annotations" --> "1" "annotation-types" : annotation-type > 
 "annotations" --> "1" "agents" : creator > 
 "annotations" --> "1" "besluiten" : about > 
+"annotations" --> "*" "annotation-feedbacks" : feedback > 
 class "agents"
 "agents" : name
 "agents" --> "*" "annotations" : creator > 

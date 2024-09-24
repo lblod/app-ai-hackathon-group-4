@@ -142,11 +142,21 @@ dct:title rdf:type owl:DatatypeProperty;
 
 
 ext:local_id_5 rdf:type owl:ObjectProperty;
+  rdfs:comment "Original relationship is ext:hasFeedback";
+  rdfs:label "feedback";
+  rdfs:domain oa:Annotation;
+  rdfs:range ext:AnnotationFeedback.
+ext:local_id_6 rdf:type owl:ObjectProperty;
+  rdfs:comment "Original relationship is ext:hasFeedback";
+  rdfs:label "annotation";
+  rdfs:domain ext:AnnotationFeedback;
+  rdfs:range ext:AnnotationFeedback.
+ext:local_id_7 rdf:type owl:ObjectProperty;
   rdfs:comment "Original relationship is dct:type";
   rdfs:label "kind";
   rdfs:domain besluit:Besluit;
   rdfs:range skos:Concept.
-ext:local_id_6 rdf:type owl:ObjectProperty;
+ext:local_id_8 rdf:type owl:ObjectProperty;
   rdfs:comment "Original relationship is dct:type";
   rdfs:label "annotation-type";
   rdfs:domain oa:Annotation;
