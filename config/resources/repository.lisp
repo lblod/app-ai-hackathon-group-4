@@ -38,3 +38,7 @@
 (add-prefix "locn" "http://www.w3.org/ns/locn#")
 (add-prefix "skos" "http://www.w3.org/2004/02/skos/core#")
 (add-prefix "adres" "http://data.vlaanderen.be/ns/adres#")
+(add-prefix "oa" "http://www.w3.org/ns/oa#")
+(add-prefix "besluit" "http://data.vlaanderen.be/ns/besluit#")
+(add-prefix "foaf" "http://xmlns.com/foaf/0.1/")
+

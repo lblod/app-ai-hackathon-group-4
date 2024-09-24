@@ -1,5 +1,15 @@
 @startuml
 set namespaceSeparator none
+class "agents"
+"agents" : name
+"agents" --> "*" "annotations" : creator > 
+class "annotations"
+"annotations" : body
+"annotations" : created
+"annotations" : motivation
+"annotations" --> "1" "annotation-types" : annotation-type > 
+"annotations" --> "1" "agents" : creator > 
+"annotations" --> "1" "besluiten" : about > 
 class "aanduidingsobjects"
 "aanduidingsobjects" : title
 "aanduidingsobjects" : description
@@ -8,6 +18,8 @@ class "aanduidingsobjects"
 "aanduidingsobjects" : creation
 "aanduidingsobjects" --> "1" "address-representations" : address > 
 "aanduidingsobjects" --> "1" "concepts" : typology > 
+class "concepts"
+"concepts" : title
 class "address-representations"
 "address-representations" : municipality-name
 "address-representations" : province
@@ -17,8 +29,10 @@ class "address-representations"
 "address-representations" --> "*" "aanduidingsobjects" : references > 
 "NIL" <|-- "address-representations"
 class "NIL"
+class "annotation-types"
+"annotation-types" : title
+"concepts" <|-- "annotation-types"
 class "besluiten"
 "besluiten" : title
-class "concepts"
-"concepts" : title
+"besluiten" --> "1" "concepts" : kind > 
 @enduml

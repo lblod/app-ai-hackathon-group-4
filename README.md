@@ -18,6 +18,13 @@ This wasn't used yet. Not only did we have to prioritize, we also found some dif
 
 ## [Slimme Raadpleeg Omgeving](https://data.vlaanderen.be/doc/applicatieprofiel/slimmeraadpleegomgeving/)
 
+Here we specifically use the http://www.w3.org/ns/oa#Annotation class to flag our AI enrichments. We use the predicates in [the annotation-vocab W3C recommendation](https://www.w3.org/TR/annotation-vocab/) to link it to the agent that created the annotation (and mark that agent as an AI agent).
+
+We currently are rather basic in our use of this model. It could be extended with:
+
+- better motivation instances that point to the exact sections of the document that were used and the models used to create the ai generated content
+- better description of the type of content that is generated. We currently use just Annotation with a `dct:type` but this can go much further, generating actual bits of the OSLO model(s) used in the final product and having every annotation refer to the subject, predicate and object that it generates.
+
 # AI Model
 
 # Assumptions, Shortcuts and Hacks

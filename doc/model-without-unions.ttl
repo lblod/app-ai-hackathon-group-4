@@ -1,4 +1,7 @@
 @prefix cms: <http://mu.semte.ch/vocabulary/cms/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix besluit: <http://data.vlaanderen.be/ns/besluit#>.
+@prefix oa: <http://www.w3.org/ns/oa#>.
 @prefix adres: <http://data.vlaanderen.be/ns/adres#>.
 @prefix skos: <http://www.w3.org/2004/02/skos/core#>.
 @prefix locn: <http://www.w3.org/ns/locn#>.
@@ -19,18 +22,50 @@
 <http://mu.semte.ch/ontology> dc:title "Generated resource ontology". 
 <http://mu.semte.ch/ontology> dc:description "Generated resource ontology". 
 
+foaf:Agent rdf:type owl:Class;
+  rdfs:label "agent".
+oa:Annotation rdf:type owl:Class;
+  rdfs:label "annotation".
 cidoc:E22_Man-Made_Object rdf:type owl:Class;
   rdfs:label "aanduidingsobject".
+skos:Concept rdf:type owl:Class;
+  rdfs:label "concept".
 locn:Address rdf:type owl:Class;
    rdfs:subClassOf prov:Location;
   rdfs:label "address".
 prov:Location rdf:type owl:Class;
   rdfs:label "location".
+ext:AnnotationType rdf:type owl:Class;
+   rdfs:subClassOf skos:Concept;
+  rdfs:label "annotation-type".
 besluit:Besluit rdf:type owl:Class;
   rdfs:label "besluit".
-skos:Concept rdf:type owl:Class;
-  rdfs:label "typology".
 
+foaf:name rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is foaf:name.";
+  rdfs:label "name";
+  rdfs:range rdfs:Literal;
+  rdfs:domain foaf:Agent.
+oa:hasBody rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is oa:hasBody.";
+  rdfs:label "body";
+  rdfs:range rdfs:Literal;
+  rdfs:domain oa:Annotation.
+ext:local_id_1 rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is datetime.  Original predicate is dct:created.";
+  rdfs:label "creation";
+  rdfs:range rdfs:Literal;
+  rdfs:domain cidoc:E22_Man-Made_Object.
+ext:local_id_2 rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is datetime.  Original predicate is dct:created.";
+  rdfs:label "created";
+  rdfs:range rdfs:Literal;
+  rdfs:domain oa:Annotation.
+oa:motivatedBy rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is oa:motivatedBy.";
+  rdfs:label "motivation";
+  rdfs:range rdfs:Literal;
+  rdfs:domain oa:Annotation.
 cidoc:P102_has_title rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string.  Original predicate is cidoc:P102_has_title.";
   rdfs:label "title";
@@ -51,11 +86,16 @@ ext:artStyle rdf:type owl:DatatypeProperty;
   rdfs:label "style";
   rdfs:range rdfs:Literal;
   rdfs:domain cidoc:E22_Man-Made_Object.
-dct:created rdf:type owl:DatatypeProperty;
-  rdfs:comment "Resources type is datetime.  Original predicate is dct:created.";
-  rdfs:label "creation";
+ext:local_id_3 rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is skos:prefLabel.";
+  rdfs:label "title";
   rdfs:range rdfs:Literal;
-  rdfs:domain cidoc:E22_Man-Made_Object.
+  rdfs:domain ext:AnnotationType.
+ext:local_id_4 rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is skos:prefLabel.";
+  rdfs:label "title";
+  rdfs:range rdfs:Literal;
+  rdfs:domain skos:Concept.
 adres:gemeentenaam rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string.  Original predicate is adres:gemeentenaam.";
   rdfs:label "municipality-name";
@@ -86,13 +126,28 @@ dct:title rdf:type owl:DatatypeProperty;
   rdfs:label "title";
   rdfs:range rdfs:Literal;
   rdfs:domain besluit:Besluit.
-skos:prefLabel rdf:type owl:DatatypeProperty;
-  rdfs:comment "Resources type is string.  Original predicate is skos:prefLabel.";
-  rdfs:label "title";
-  rdfs:range rdfs:Literal;
-  rdfs:domain skos:Concept.
 
 
+dct:creator rdf:type owl:ObjectProperty;
+  rdfs:comment "";
+  rdfs:label "creator";
+  rdfs:domain oa:Annotation;
+  rdfs:range foaf:Agent.
+ext:local_id_5 rdf:type owl:ObjectProperty;
+  rdfs:comment "Original relationship is dct:type";
+  rdfs:label "kind";
+  rdfs:domain besluit:Besluit;
+  rdfs:range skos:Concept.
+ext:local_id_6 rdf:type owl:ObjectProperty;
+  rdfs:comment "Original relationship is dct:type";
+  rdfs:label "annotation-type";
+  rdfs:domain oa:Annotation;
+  rdfs:range ext:AnnotationType.
+oa:hasTarget rdf:type owl:ObjectProperty;
+  rdfs:comment "";
+  rdfs:label "about";
+  rdfs:domain oa:Annotation;
+  rdfs:range besluit:Besluit.
 cidoc:P53_has_former_or_current_location rdf:type owl:ObjectProperty;
   rdfs:comment "";
   rdfs:label "address";
