@@ -22,10 +22,13 @@
 <http://mu.semte.ch/ontology> dc:title "Generated resource ontology". 
 <http://mu.semte.ch/ontology> dc:description "Generated resource ontology". 
 
-foaf:Agent rdf:type owl:Class;
-  rdfs:label "agent".
+ext:AnnotationFeedback rdf:type owl:Class;
+   rdfs:subClassOf oa:Annotation;
+  rdfs:label "annotation-feedback".
 oa:Annotation rdf:type owl:Class;
   rdfs:label "annotation".
+foaf:Agent rdf:type owl:Class;
+  rdfs:label "agent".
 cidoc:E22_Man-Made_Object rdf:type owl:Class;
   rdfs:label "aanduidingsobject".
 skos:Concept rdf:type owl:Class;
@@ -41,11 +44,16 @@ ext:AnnotationType rdf:type owl:Class;
 besluit:Besluit rdf:type owl:Class;
   rdfs:label "besluit".
 
-foaf:name rdf:type owl:DatatypeProperty;
-  rdfs:comment "Resources type is string.  Original predicate is foaf:name.";
-  rdfs:label "name";
+ext:feedback rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is ext:feedback.";
+  rdfs:label "feedback";
   rdfs:range rdfs:Literal;
-  rdfs:domain foaf:Agent.
+  rdfs:domain ext:AnnotationFeedback.
+ext:rating rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is number.  Original predicate is ext:rating.";
+  rdfs:label "rating";
+  rdfs:range rdfs:Literal;
+  rdfs:domain ext:AnnotationFeedback.
 oa:hasBody rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string.  Original predicate is oa:hasBody.";
   rdfs:label "body";
@@ -66,6 +74,11 @@ oa:motivatedBy rdf:type owl:DatatypeProperty;
   rdfs:label "motivation";
   rdfs:range rdfs:Literal;
   rdfs:domain oa:Annotation.
+foaf:name rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is foaf:name.";
+  rdfs:label "name";
+  rdfs:range rdfs:Literal;
+  rdfs:domain foaf:Agent.
 cidoc:P102_has_title rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string.  Original predicate is cidoc:P102_has_title.";
   rdfs:label "title";
@@ -128,11 +141,6 @@ dct:title rdf:type owl:DatatypeProperty;
   rdfs:domain besluit:Besluit.
 
 
-dct:creator rdf:type owl:ObjectProperty;
-  rdfs:comment "";
-  rdfs:label "creator";
-  rdfs:domain oa:Annotation;
-  rdfs:range foaf:Agent.
 ext:local_id_5 rdf:type owl:ObjectProperty;
   rdfs:comment "Original relationship is dct:type";
   rdfs:label "kind";
@@ -143,6 +151,11 @@ ext:local_id_6 rdf:type owl:ObjectProperty;
   rdfs:label "annotation-type";
   rdfs:domain oa:Annotation;
   rdfs:range ext:AnnotationType.
+dct:creator rdf:type owl:ObjectProperty;
+  rdfs:comment "";
+  rdfs:label "creator";
+  rdfs:domain oa:Annotation;
+  rdfs:range foaf:Agent.
 oa:hasTarget rdf:type owl:ObjectProperty;
   rdfs:comment "";
   rdfs:label "about";

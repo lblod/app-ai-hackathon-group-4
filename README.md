@@ -32,3 +32,11 @@ We currently are rather basic in our use of this model. It could be extended wit
 ## Turning API responses into resource objects
 
 Normally this belongs in its own service. For this hackathon, we started out doing this from the frontend side as it saves us time (we can use the resources json-api to convert things).
+
+## No mu-authorization
+
+We didn't use mu-authorization (or mu-sparql-parser) for this hackathon. This means no deltas and no access control. In a real project this would probably not be acceptable, but it saved us a lot of time during the hackathon.
+
+## Supplying feedback for ai generated content
+
+Our model for supplying feedback to the ai model is very basic. It would be better to use a deeper model like for instance the [FAIR\* Reviews Ontology](https://sparontologies.github.io/fr/current/fr.html). Currently we have a counter (number literal) for both positive and negative feedback and a set of comments left by users. We don't even link to the user leaving the review as we don't have mu-authorization/login. All of this would be a straight forward extension though, this was simply done in the interest of time.

@@ -73,9 +73,23 @@
                                 :as "creator")
               (besluit :via ,(s-prefix "oa:hasTarget")
                                  :as "about"))
+  :has-many `((annotation-feedback :via ,(s-prefix "ext:hasFeedback")
+                                   :as "feedback"))
   :resource-base (s-url "http://data.lblod.info/id/annotations/")
   :features '(include-uri)
   :on-path "annotations")
+
+(define-resource annotation-feedback (annotation)
+  :class (s-prefix "ext:AnnotationFeedback")
+  :properties `((:feedback :string ,(s-prefix "ext:feedback"))
+                ;; simply +1 or -1 for now, see readme for explanation on shortcut
+                (:rating :number ,(s-prefix "ext:rating")))
+  :has-one `((annotation-feedback :via ,(s-prefix "ext:hasFeedback")
+                                  :inverse t
+                                  :as "annotation")
+  :resource-base (s-url "http://data.lblod.info/id/annotation-feedbacks/")
+  :features '(include-uri)
+  :on-path "annotation-feedbacks")
 
 (define-resource annotation-type (concept)
   :class (s-prefix "ext:AnnotationType")
