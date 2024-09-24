@@ -15,8 +15,7 @@
                 ;; should actually be instance of the type http://www.cidoc-crm.org/cidoc-crm/E87_Curation_Activity
                 (:style :string ,(s-prefix "ext:artStyle"))
                 ;; should actually be instance of type http://www.cidoc-crm.org/cidoc-crm/E65_Creation
-                (:creation :datetime ,(s-prefix "dct:created"))
-                (:location :datetime ,(s-prefix "dct:modified")))
+                (:creation :datetime ,(s-prefix "dct:created")))
   :resource-base (s-url "http://data.lblod.info/id/fracties/")
   ;; address and typology should be has many in theory i guess but shortcutting for hackathon
   :has-one `((address :via ,(s-prefix "cidoc:P53_has_former_or_current_location")

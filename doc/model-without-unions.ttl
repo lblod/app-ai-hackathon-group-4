@@ -56,11 +56,6 @@ dct:created rdf:type owl:DatatypeProperty;
   rdfs:label "creation";
   rdfs:range rdfs:Literal;
   rdfs:domain cidoc:E22_Man-Made_Object.
-dct:modified rdf:type owl:DatatypeProperty;
-  rdfs:comment "Resources type is datetime.  Original predicate is dct:modified.";
-  rdfs:label "location";
-  rdfs:range rdfs:Literal;
-  rdfs:domain cidoc:E22_Man-Made_Object.
 adres:gemeentenaam rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string.  Original predicate is adres:gemeentenaam.";
   rdfs:label "municipality-name";

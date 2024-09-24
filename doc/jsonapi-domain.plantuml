@@ -6,7 +6,6 @@ class "aanduidingsobjects"
 "aanduidingsobjects" : identifier
 "aanduidingsobjects" : style
 "aanduidingsobjects" : creation
-"aanduidingsobjects" : location
 "aanduidingsobjects" --> "1" "address-representations" : address > 
 "aanduidingsobjects" --> "1" "concepts" : typology > 
 class "address-representations"
