@@ -36,7 +36,10 @@
 
 
 (define-resource location ()
-  :class (s-prefix "prov:Location"))
+  :class (s-prefix "prov:Location")
+  :resource-base (s-url "http://data.lblod.info/id/locaties/")
+  :features '(include-uri)
+  :on-path "locations")
 
 (define-resource address (location)
   :class (s-prefix "locn:Address")
@@ -50,7 +53,7 @@
                           :as "references"))
   :resource-base (s-url "http://data.lblod.info/id/address-representations/")
   :features '(include-uri)
-  :on-path "address-representations")
+  :on-path "addresses")
 
 (define-resource besluit ()
   :class (s-prefix "besluit:Besluit")
