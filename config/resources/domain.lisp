@@ -67,6 +67,9 @@
              (aanduidingsobject :via ,(s-prefix "ext:relatedDecision")
                         :inverse t
                         :as "aanduidingsobject"))
+  :has-many `((annotation :via ,(s-prefix "oa:hasTarget")
+                          :inverse t
+                          :as "annotations"))
   ;; the uri is the location of the file
   :features '(include-uri)
   :on-path "besluits")
