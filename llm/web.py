@@ -228,13 +228,13 @@ async def get_tasks(request: Request, limit: int = 1):
             PREFIX besluit: <http://data.vlaanderen.be/ns/besluit#>
             PREFIX dct: <http://purl.org/dc/terms/>
             PREFIX oa: <http://www.w3.org/ns/oa#>
-    
+            PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+
             SELECT ?decision ?downloadLink ?title ?concept
             WHERE {{
                 GRAPH {sparql_escape_uri(queue_graph)} {{
                     ?decision a besluit:Besluit;
-                       ext:dowloadLink ?downloadLink;
-                       ext:oeBesluitUri ?besluit_uri;
+                       ext:dowloadLink ?downloadLink.
 
     
                     # Optionally retrieve title and concept
