@@ -21,6 +21,38 @@ defmodule Dispatcher do
   # Run `docker-compose restart dispatcher` after updating
   # this file.
 
+  ###############
+  # STATIC
+  ###############
+
+  # self-service
+  match "/index.html", %{layer: :static} do
+    forward(conn, [], "http://frontend/index.html")
+  end
+
+  get "/assets/*path", %{layer: :static} do
+    forward(conn, path, "http://frontend/assets/")
+  end
+
+  get "/@appuniversum/*path", %{layer: :static} do
+    forward(conn, path, "http://frontend/@appuniversum/")
+  end
+
+  #################
+  # FRONTEND PAGES
+  #################
+
+  # self-service
+  match "/*path", %{layer: :fall_back, accept: %{html: true}} do
+    # we don't forward the path, because the app should take care of this in the browser.
+    forward(conn, [], "http://frontend/index.html")
+  end
+
+
+  ################
+  # RESOURCES
+  ################
+
   match "/resource/*path", @json do
     Proxy.forward( conn, path, "http://resource/" )
   end
