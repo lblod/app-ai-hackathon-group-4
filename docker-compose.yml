@@ -1,39 +1,39 @@
 services:
-
   llm:
-      image: svercoutere/mu-python-ml:0.1.0
-      environment:
-        MODE: "development"
-        MU_SPARQL_ENDPOINT: "http://database:8890/sparql"
-        MU_SPARQL_UPDATEPOINT: "http://database:8890/sparql"
-        MU_QUEUE_GRAPH: "http://mu.semte.ch/graphs/tasks"
+    image: svercoutere/mu-python-ml:0.1.0
+    environment:
+      MODE: "development"
+      MU_SPARQL_ENDPOINT: "http://database:8890/sparql"
+      MU_SPARQL_UPDATEPOINT: "http://database:8890/sparql"
+      MU_QUEUE_GRAPH: "http://mu.semte.ch/graphs/tasks"
 
-        LLM_API_KEY: "ollama" # Default value of ollama
-        LLM_ENDPOINT: "http://ollama:11434/v1/" # Can be from any provided that is compatible with the openai (deepinfra, azure, etc.)
-        LLM_MODEL_NAME: "llama3.1:8b-instruct-q4_0" # Name of the model to use, can be any model the endpoint supports (ollama: you can pull more opensource model from ollama and run them as well locally)
-        
-      volumes:
+      LLM_API_KEY: "ollama" # Default value of ollama
+      LLM_ENDPOINT: "http://ollama:11434/v1/" # Can be from any provided that is compatible with the openai (deepinfra, azure, etc.)
+      LLM_MODEL_NAME: "llama3.1:8b-instruct-q4_0" # Name of the model to use, can be any model the endpoint supports (ollama: you can pull more opensource model from ollama and run them as well locally)
+
+    volumes:
       - ./llm:/app/
 
   ollama:
     image: svercoutere/hackathon-ollama:latest
     environment:
       OLLAMA_MODEL: "llama3.1:8b-instruct-q4_0" #create the following based on the /models/<modelname>/<modelname>.modelfile
-
+  pdfsummarization:
+    image: lblod/pdf-summarization-ai-hackathon-group-4-service
   identifier:
     image: semtech/mu-identifier:1.10.3
     environment:
       SESSION_COOKIE_SECURE: "on"
     links:
       - dispatcher:dispatcher
-  
+
   dispatcher:
     image: semtech/mu-dispatcher:2.1.0-beta.2
     links:
       - resource:resource
     volumes:
       - ./config/dispatcher:/config
-  
+
   database:
     image: redpencil/virtuoso:1.2.0-rc.1
     environment:
@@ -42,14 +42,14 @@ services:
     volumes:
       - ./data/db:/data
       - ./config/virtuoso/virtuoso.ini:/data/virtuoso.ini
-  
+
   resource:
     image: semtech/mu-cl-resources:1.25.0
     links:
       - database:database
     volumes:
       - ./config/resources:/config
-  
+
   frontend:
     # Skip docker hub and just build it, it's a hackathon...
     build: ../frontend-ai-hackathon-group-4
