@@ -4,8 +4,8 @@ services:
       image: svercoutere/mu-python-ml:0.1.0
       environment:
         MODE: "development"
-        MU_SPARQL_ENDPOINT: "http://database:8890/sparql"
-        MU_SPARQL_UPDATEPOINT: "http://database:8890/sparql"
+        MU_SPARQL_ENDPOINT: "http://virtuoso:8890/sparql"
+        MU_SPARQL_UPDATEPOINT: "http://virtuoso:8890/sparql"
         MU_QUEUE_GRAPH: "http://mu.semte.ch/application"
 
         LLM_API_KEY: "PASTE_API_KEY_HERE" # Default value of ollama: ollama 
@@ -17,8 +17,6 @@ services:
 
   ollama: # This is for the local version of the LLM that runs within the stack
     image: ollama/ollama:0.3.11
-    ports:
-      - 11434:11434
     restart: always
     environment:
       - OLLAMA_HOST=0.0.0.0

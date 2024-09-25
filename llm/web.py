@@ -42,6 +42,13 @@ print(f"Starting LLM with endpoint: {LLM_ENDPOINT}, model: {LLM_MODEL_NAME}, azu
 abb_llm = LLM(base_url = LLM_ENDPOINT, api_key = LLM_API_KEY, model_name = LLM_MODEL_NAME, azure = LLM_ON_AZURE)
 
 
+annotation_type_mapping = {
+    'summary':'annot:e2d9bd23-e478-411b-a461-ad2fe9b13e30',
+    'allowed_actions': 'annot:315aa3eb-06bd-4e03-ab0c-48c8d5449e92',
+    'requires_permit': 'annot:b9c6e507-08b7-4715-9c85-34f04270179d',
+    'keywords': 'annot:b9c6e507-08b7-4715-9c85-34f04270179d'
+}
+
 """ decision_processor = DecisionProcessor(abb_llm)
 
 
@@ -137,7 +144,7 @@ def generate_annotation_insert_query(annotation: AnnotationInput, sparql_graph: 
     annotation_uri = f"http://data.lblod.info/annotations/{annotation_uuid}"
 
     # Get annotation-type URI
-    annotation_type_uri = f"http://data.lblod.info/annotations/annotation_types/{annotation.annotation_type}"
+    annotation_type_uri = f"http://data.lblod.info/annotations/annotation_types/{annotation_type_mapping[annotation.annotation_type]}"
 
     # Define prefixes
     prefixes = """
@@ -163,8 +170,6 @@ def generate_annotation_insert_query(annotation: AnnotationInput, sparql_graph: 
                     dct:type {sparql_escape_uri(annotation_type_uri)} ;
                     dct:creator {sparql_escape_uri(LLM_MODEL_URI)} .
 
-                {sparql_escape_uri(annotation_type_uri)} a oa:AnnotationType ;
-                    skos:prefLabel "{annotation.annotation_type}" .
             }}
         }}
     """
@@ -198,6 +203,9 @@ async def root():
         </body>
     </html>
     """
+
+
+
 
 # Task queue endpoints
 @app.get("/tasks", tags=["tasks"])
@@ -270,11 +278,25 @@ async def store_task_results(request: Request, annotation: AnnotationInput, spar
     Endpoint for generating SPARQL INSERT queries from a dictionary.
 
     Parameters:
-    graph_dict (dict): The dictionary to generate queries from.
+    annotation (AnnotationInput): The annotation input model containing annotation properties. The structure should be:
+        {
+            "body": "The body of the annotation",
+            "motivation": "The motivation for the annotation",
+            "annotation_type": "The type of the annotation or type of enrichment: summarization, keywords, etc",
+            "besluit_uri": "The URI of the besluit",
+        }
     sparql_graph (str): The URI of the SPARQL graph to insert data into.
 
     Returns:
-    list: A list of SPARQL INSERT queries.
+    dict: A dictionary with the status of the operation.
+
+    Example Input:
+    {
+        "body": "This is the body of the annotation.",
+        "motivation": "describing",
+        "annotation_type": "summarization",
+        "besluit_uri": "http://example.com/besluit/123"
+    }
     """
     try:
         query = generate_annotation_insert_query(annotation, sparql_graph)
@@ -286,6 +308,8 @@ async def store_task_results(request: Request, annotation: AnnotationInput, spar
         return {"status": "success", "message": "Batch update completed successfully"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
 
 #general ai endpoints
 @app.post("/translate", tags=["text"])
