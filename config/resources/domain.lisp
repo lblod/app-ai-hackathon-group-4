@@ -29,7 +29,6 @@
              (concept :via ,(s-prefix "cidoc:P2_has_type")
                        :as "typology"))
   :has-many `((besluit :via ,(s-prefix "ext:relatedDecision")
-                    :inverse t
                     :as "decisions"))
   :features '(include-uri)
   :on-path "aanduidingsobjects")
