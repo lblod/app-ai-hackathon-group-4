@@ -66,7 +66,7 @@ defmodule Dispatcher do
   end
 
   match "/addresses/*path", @json do
-    Proxy.forward( conn, path, "http://resource/locations/" )
+    Proxy.forward( conn, path, "http://resource/addresses/" )
   end
 
   match "/besluits/*path", @json do
