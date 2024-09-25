@@ -20,6 +20,8 @@ The model is built to run with both a local LLM (via Ollama) or accept an endpoi
 
 This project is built using the [lblod/mu-python-ml-fastapi-template](https://github.com/lblod/mu-python-ml-fastapi-template) to make it easier to handle async requests. It provides interactive API documentation and an exploration web user interface at `http://endpoint:2000/docs#/`. For this hackathon, the service provides methods for fetching unprocessed decisions, endpoints for processing them using the LLM, and functionality to store the processed results into the triplestore as `oa:Annotations`.
 
+Currently this service is included as a development service with it's source in the app repository itself. This should be turned into its own repository/microservice but we ran out of time before we could do this.
+
 # Semantic Model
 
 For the semantic model, we considered the following application profiles:
