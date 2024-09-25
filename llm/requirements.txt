@@ -3,6 +3,7 @@ matplotlib
 adjustText
 werkzeug
 python-multipart
+pymupdf4llm
 networkx
 bs4
 nltk

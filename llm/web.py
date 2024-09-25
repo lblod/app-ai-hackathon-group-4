@@ -49,16 +49,16 @@ annotation_type_mapping = {
     'keywords': 'f3b9dfe8-4cab-4747-be76-5cd59c07cae6'
 }
 
-""" decision_processor = DecisionProcessor(abb_llm)
+decision_processor = DecisionProcessor(abb_llm)
 
 
 # Initialize the worker manager
 worker_manager = WorkerManager(1,
                                 sleep_time=10,
-                                queue_endpoint="http://localhost/tasks",
-                                graph_endpoint="http://localhost/tasks/results",
-                                agendapunten_processor=decision_processor)
- """
+                                fetch_endpoint="http://localhost/tasks/annotated",
+                                post_endpoint="http://localhost/tasks/results",
+                                processor=decision_processor)
+
 
 # input classes for the endpoints
 class TaskInput(BaseModel):
@@ -91,6 +91,10 @@ class ClassificationInputTaxonomy(BaseModel):
 
 class SummarizationInput(BaseModel):
     text: str
+
+class CustomSummarizationInput(BaseModel):
+    text: str
+    prompt: str
 
 class RawPromptInput(BaseModel):
     system_message: str
@@ -162,7 +166,7 @@ def generate_annotation_insert_query(annotation: AnnotationInput, sparql_graph: 
             GRAPH <{sparql_graph}> {{
                 {sparql_escape_uri(annotation_uri)} a oa:Annotation ;
                     mu:uuid "{annotation_uuid}" ;
-                    oa:hasBody "{annotation.body}" ;
+                    oa:hasBody {annotation.body} ;
                     dct:created "{datetime.now().isoformat()}"^^xsd:dateTime ;
                     oa:motivatedBy "{annotation.motivation}" ;
 
@@ -176,7 +180,6 @@ def generate_annotation_insert_query(annotation: AnnotationInput, sparql_graph: 
     return query
 
 
-"""
 # event handlers for worker management
 @app.on_event("startup")
 async def startup_event():
@@ -192,7 +195,7 @@ async def restart_workers():
     worker_manager.start_workers()
     return {"message": "Workers restarted successfully"}
 
- """
+ 
 # Default endpoint
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -258,8 +261,9 @@ async def get_tasks(request: Request, limit: int = 1):
         raise HTTPException(status_code=400, detail=str(e))
 
     tasks = result["results"]["bindings"]
+
     if not tasks:
-        raise HTTPException(status_code=404, detail="No tasks found.")
+        return []
 
     return [
         {
@@ -270,6 +274,77 @@ async def get_tasks(request: Request, limit: int = 1):
         }
         for task in tasks
     ]
+
+
+# Task queue endpoints
+@app.get("/tasks/annotated", tags=["tasks"])
+async def get_tasks(request: Request, limit: int = 1):
+    """
+    Get all tasks with a specified status.
+
+    This function queries the task queue in the application graph 
+    for tasks and returns a fixed number of items.
+
+    Args:
+        limit (int): The maximum number of tasks to retrieve.
+
+    Returns:
+        list: A list of tasks with their attributes.
+    """
+    print("Triggered get_tasks")
+    # Create the SPARQL SELECT query
+
+    annotation_type_uri = f"http://data.vlaanderen.be/id/concept/annotatie-types/{annotation_type_mapping['summary']}"
+    
+    query_string = f"""
+            PREFIX besluit: <http://data.vlaanderen.be/ns/besluit#>
+            PREFIX dct: <http://purl.org/dc/terms/>
+            PREFIX oa: <http://www.w3.org/ns/oa#>
+            PREFIX ext: <http://mu.semte.ch/vocabularies/ext/>
+
+            SELECT ?decision ?downloadLink ?title ?concept
+            WHERE {{
+                GRAPH {sparql_escape_uri(queue_graph)} {{
+                    ?decision a besluit:Besluit;
+                       ext:dowloadLink ?downloadLink.
+
+    
+                    # Optionally retrieve title and concept
+                    OPTIONAL {{ ?decision dct:title ?title . }}
+                    OPTIONAL {{ ?decision dct:type ?concept . }}
+    
+                    # Ensure there are no annotations linked via oa:hasTarget
+                    FILTER EXISTS {{
+                        ?annotation a oa:Annotation ;
+                                    dct:type {sparql_escape_uri(annotation_type_uri)} ;
+                                    oa:hasTarget ?decision .
+                    }}
+                }}
+            }}
+            LIMIT {limit}
+        """
+    # Execute the SPARQL SELECT query
+    print("Executing query", query_string)
+    try:
+        result = query(query_string, request)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    tasks = result["results"]["bindings"]
+    
+    if not tasks:
+        return []
+
+    return [
+        {
+            "uri": task["decision"]["value"],
+            "downloadLink": task["downloadLink"]["value"],
+            "title": task.get("title", {}).get("value", ""),
+            "concept": task.get("concept", {}).get("value", ""),
+        }
+        for task in tasks
+    ]
+
 
 # storing results back to the graph
 @app.post("/tasks/results", tags=["tasks"])
@@ -455,6 +530,42 @@ async def summarize_text(summarization_input: SummarizationInput):
         return summary
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/summarize_custom_prompt", tags=["text"])
+async def summarize_custom_prompt(summarization_input: CustomSummarizationInput):
+    """
+    Summarizes the given text with a custom prompt.
+
+    Args:
+        summarization_input (CustomSummarizationInput): An object containing the text to be summarized and the custom prompt.
+
+    Returns:
+        dict: A dictionary containing the summarized text.
+
+    Raises:
+        HTTPException: If there's an error during the summarization.
+
+    Example:
+        To use this endpoint, you can send a POST request to `/summarize_custom_prompt` with a JSON body like this:
+
+        {
+            "text": "This is a long text that needs to be summarized.",
+            "prompt": "Summarize the following text in one sentence. Return it as a JSON object with the following format: {\"allowed\": \"summary of the points\", \"requires_permit\": \"the points that require a permit\"}"
+        }
+
+        The response will be a dictionary containing the summarized text, like this:
+
+        {
+            "summary": "This is a summary."
+        }
+    """
+    try:
+        summary = abb_llm.summarize_text_custom_prompt(summarization_input.text, prompt=summarization_input.prompt)
+        return summary
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 @app.post("/raw_prompt", tags=["text"])
 async def raw_prompt(raw_prompt_input: RawPromptInput):
