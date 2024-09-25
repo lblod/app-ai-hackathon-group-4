@@ -199,58 +199,7 @@ async def root():
     </html>
     """
 
-
 # Task queue endpoints
-@app.get("/tasks/{task_uuid}", tags=["tasks"])
-async def get_task(request: Request, task_uuid: str):
-    """
-    Get a task.
-
-    This function receives a task UUID, queries the task queue in the application graph 
-    for the task with the given UUID, and returns all its attributes.
-
-    Args:
-        task_uuid (str): The UUID of the task.
-
-    Returns:
-        dict: The task attributes.
-    """
-    # Create the SPARQL SELECT query
-    query_string = f"""
-        PREFIX besluit: <http://data.vlaanderen.be/ns/besluit#>
-        PREFIX dct: <http://purl.org/dc/terms/>
-
-        SELECT ?uri ?title ?concept WHERE {{
-            GRAPH {sparql_escape_uri(queue_graph)} {{
-                {sparql_escape_uri(task_uuid)} a besluit:Besluit ;
-                    dct:title ?title ;
-                    dct:type ?concept .
-            }}
-        }}
-    """
-
-    # Execute the SPARQL SELECT query
-    try:
-        result = query(query_string, request)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    # Check if a task with the given UUID exists
-    if not result["results"]["bindings"]:
-        raise HTTPException(status_code=404, detail="Task not found.")
-
-    # Logging
-    print("Task found. Returning task attributes.")
-    print(result)
-
-    # Return the task attributes
-    task = result["results"]["bindings"][0]
-    return {
-        "uri": str(task["uri"]["value"]),
-        "title": str(task["title"]["value"]),
-        "concept": str(task["concept"]["value"]),
-    }
-
 @app.get("/tasks", tags=["tasks"])
 async def get_tasks(request: Request, limit: int = 1):
     """
@@ -272,10 +221,13 @@ async def get_tasks(request: Request, limit: int = 1):
             PREFIX dct: <http://purl.org/dc/terms/>
             PREFIX oa: <http://www.w3.org/ns/oa#>
     
-            SELECT ?decision ?title ?concept
+            SELECT ?decision ?downloadLink ?title ?concept
             WHERE {{
                 GRAPH {sparql_escape_uri(queue_graph)} {{
-                    ?decision a besluit:Besluit .
+                    ?decision a besluit:Besluit;
+                       ext:dowloadLink ?downloadLink;
+                       ext:oeBesluitUri ?besluit_uri;
+
     
                     # Optionally retrieve title and concept
                     OPTIONAL {{ ?decision dct:title ?title . }}
@@ -304,6 +256,7 @@ async def get_tasks(request: Request, limit: int = 1):
     return [
         {
             "uri": task["decision"]["value"],
+            "downloadLink": task["downloadLink"]["value"],
             "title": task.get("title", {}).get("value", ""),
             "concept": task.get("concept", {}).get("value", ""),
         }
@@ -333,7 +286,6 @@ async def store_task_results(request: Request, annotation: AnnotationInput, spar
         return {"status": "success", "message": "Batch update completed successfully"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
-
 
 #general ai endpoints
 @app.post("/translate", tags=["text"])

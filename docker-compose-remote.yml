@@ -16,10 +16,16 @@ services:
       - ./llm:/app/
 
   ollama: # This is for the local version of the LLM that runs within the stack
-    image: svercoutere/hackathon-ollama:latest
+    image: ollama/ollama:0.3.11
+    ports:
+      - 11434:11434
+    restart: always
     environment:
-      OLLAMA_MODEL: "llama3.1:8b-instruct-q4_0" #create the following based on the /models/<modelname>/<modelname>.modelfile
+      - OLLAMA_HOST=0.0.0.0
+    volumes:
+      - ./ollama_models:/root/.ollama
 
+      
   identifier:
     image: semtech/mu-identifier:1.10.3
     environment:
