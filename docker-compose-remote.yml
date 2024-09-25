@@ -16,7 +16,7 @@ services:
       - ./llm:/app/
 
   ollama: # This is for the local version of the LLM that runs within the stack
-    image: svercoutere/mu-local-llm:latest
+    image: svercoutere/hackathon-ollama:latest
     environment:
       OLLAMA_MODEL: "llama3.1:8b-instruct-q4_0" #create the following based on the /models/<modelname>/<modelname>.modelfile
 

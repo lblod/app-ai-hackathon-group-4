@@ -4,8 +4,8 @@ services:
       image: svercoutere/mu-python-ml:0.1.0
       environment:
         MODE: "development"
-        MU_SPARQL_ENDPOINT: "http://triplestore:8890/sparql"
-        MU_SPARQL_UPDATEPOINT: "http://triplestore:8890/sparql"
+        MU_SPARQL_ENDPOINT: "http://database:8890/sparql"
+        MU_SPARQL_UPDATEPOINT: "http://database:8890/sparql"
         MU_QUEUE_GRAPH: "http://mu.semte.ch/graphs/tasks"
 
         LLM_API_KEY: "ollama" # Default value of ollama
@@ -16,10 +16,9 @@ services:
       - ./llm:/app/
 
   ollama:
-    image: svercoutere/mu-local-llm:latest
+    image: svercoutere/hackathon-ollama:latest
     environment:
       OLLAMA_MODEL: "llama3.1:8b-instruct-q4_0" #create the following based on the /models/<modelname>/<modelname>.modelfile
-
 
   identifier:
     image: semtech/mu-identifier:1.10.3
@@ -27,12 +26,14 @@ services:
       SESSION_COOKIE_SECURE: "on"
     links:
       - dispatcher:dispatcher
+  
   dispatcher:
     image: semtech/mu-dispatcher:2.1.0-beta.2
     links:
       - resource:resource
     volumes:
       - ./config/dispatcher:/config
+  
   database:
     image: redpencil/virtuoso:1.2.0-rc.1
     environment:
@@ -41,12 +42,14 @@ services:
     volumes:
       - ./data/db:/data
       - ./config/virtuoso/virtuoso.ini:/data/virtuoso.ini
+  
   resource:
     image: semtech/mu-cl-resources:1.25.0
     links:
       - database:database
     volumes:
       - ./config/resources:/config
+  
   frontend:
     # Skip docker hub and just build it, it's a hackathon...
     build: ../frontend-ai-hackathon-group-4
