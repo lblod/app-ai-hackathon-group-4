@@ -310,16 +310,17 @@ class LLM:
     def generate_summarization_task(self, context, include_system_message=True):
 
         task = """
-        You are an expert in summarizing text data based on a provided context. Your task is to summarize the given text provided in the context.
+        Je bent een expert in het samenvatten van tekstgegevens op basis van een gegeven context. Het is jouw taak om de gegeven tekst in de context samen te vatten.
         
-        Summarize the document provided in context. Ensure that the summary is concise and captures the main points of the document. 
-        Keep the text in its original language and do not translate the names of people, places, or organizations.
+        Vat het gegeven document samen in de context. Zorg ervoor dat de samenvatting beknopt is en de belangrijkste punten van het document weergeeft. 
+        Houd de tekst in de oorspronkelijke taal en vertaal de namen van mensen, plaatsen of organisaties niet.
         
-        Desired Output:
-        Output the summary in a JSON format, like this:
+        Gewenste uitvoer:
+        Voer de samenvatting uit in een JSON-indeling, zoals deze:
         {
-            "summary": "Your summary here."
+            “samenvatting": “Uw samenvatting hier.”
         }
+
         """
 
         prompt, system = self.generate_json_prompt(task, context, include_system_message)
