@@ -1,4 +1,25 @@
 services:
+  llm:
+    image: svercoutere/mu-python-ml:0.1.0
+    environment:
+      MODE: "development"
+      MU_SPARQL_ENDPOINT: "http://virtuoso:8890/sparql"
+      MU_SPARQL_UPDATEPOINT: "http://virtuoso:8890/sparql"
+      MU_QUEUE_GRAPH: "http://mu.semte.ch/graphs/tasks"
+
+      LLM_API_KEY: "ollama" # Default value of ollama
+      LLM_ENDPOINT: "http://ollama:11434/v1/" # Can be from any provided that is compatible with the openai (deepinfra, azure, etc.)
+      LLM_MODEL_NAME: "llama3.1:8b-instruct-q4_0" # Name of the model to use, can be any model the endpoint supports (ollama: you can pull more opensource model from ollama and run them as well locally)
+
+    volumes:
+      - ./llm:/app/
+
+  ollama:
+    image: svercoutere/hackathon-ollama:latest
+    environment:
+      OLLAMA_MODEL: "llama3.1:8b-instruct-q4_0" #create the following based on the /models/<modelname>/<modelname>.modelfile
+  pdfsummarization:
+    image: lblod/pdf-summarization-ai-hackathon-group-4-service
   identifier:
     image: semtech/mu-identifier:1.10.3
     environment:

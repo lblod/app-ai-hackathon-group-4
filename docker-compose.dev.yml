@@ -1,4 +1,17 @@
 services:
+  llm:
+    ports:
+      - "2000:80"
+    restart: "no"
+  ollama:
+    ports:
+      - "11434:11434"
+    restart: "no"
+  pdfsummarization:
+    ports:
+      # we should not do this but for hackathon purposes it's fine for now
+      - 9090:9090
+    restart: "no"
   identifier:
     restart: "no"
     ports:
@@ -7,14 +20,15 @@ services:
     restart: "no"
     ports:
       - "8890:8890"
+  database:
+    restart: "no"
   # Override the frontend and run it locally instead to avoid need to build image
   frontend:
-    restart: "no"
-  database:
     restart: "no"
   dispatcher:
     restart: "no"
   resource:
     restart: "no"
   migrations:
+    image: node:20-slim
     restart: "no"
