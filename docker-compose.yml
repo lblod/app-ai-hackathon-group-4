@@ -24,7 +24,6 @@ services:
     volumes:
       - ./ollama_models:/root/.ollama
 
-      
   pdfsummarization:
     image: lblod/pdf-summarization-ai-hackathon-group-4-service
   identifier:
@@ -65,8 +64,7 @@ services:
       - "logging=true"
     restart: always
   frontend:
-    # Skip docker hub and just build it, it's a hackathon...
-    build: ../frontend-ai-hackathon-group-4
+    image: lblod/frontend-ai-hackathon-group-4
     restart: always
   migrations:
     image: semtech/mu-migrations-service:0.6.0
