@@ -144,7 +144,7 @@ def generate_annotation_insert_query(annotation: AnnotationInput, sparql_graph: 
     annotation_uri = f"http://data.lblod.info/annotations/{annotation_uuid}"
 
     # Get annotation-type URI
-    annotation_type_uri = f"http://data.lblod.info/annotations/annotation_types/{annotation_type_mapping[annotation.annotation_type]}"
+    annotation_type_uri = f"http://data.vlaanderen.be/id/concept/annotatie-types/{annotation_type_mapping[annotation.annotation_type]}"
 
     # Define prefixes
     prefixes = """
