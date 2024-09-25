@@ -30,5 +30,4 @@ services:
   resource:
     restart: "no"
   migrations:
-    image: node:20-slim
     restart: "no"
