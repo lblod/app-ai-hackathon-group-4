@@ -192,6 +192,7 @@ class LLM:
         return response.choices[0].message.content
 
     # TASK: classification
+    
     def generate_classification_task(self, context, taxonomy, include_system_message=True):
 
         task_string = """
@@ -304,7 +305,6 @@ class LLM:
     
         return response.choices[0].message.content
     
-
     # TASK: summarization
 
     def generate_summarization_task(self, context, include_system_message=True):
@@ -335,19 +335,13 @@ class LLM:
 
         return response.choices[0].message.content
     
+    # TASK: general prompting 
 
-    # TASK: general prompting
+    def process_raw_prompt(self, system_message, prompt_string):
+        # Generate the classification task
 
-    def generate_prompt_task(self, context, include_system_message=True):
+        # Generate the response using OpenAI (or any other method)
+        response = self.generate_response(system_message, prompt_string, stream=False, json_mode=True)
 
-        task = """
-        You are an expert in asnwering prompts based on a provided context. Your task is to interpret the given prompt and generate a response based on the context provided.
-                
-        Desired Output:
-        
-        
-        """
-
-        prompt, system = self.generate_json_prompt(task, context, include_system_message)
-
-        return prompt, system, task, {"context": context}
+        return response.choices[0].message.content
+    

@@ -1,6 +1,7 @@
 # Standard library imports
 import json
 import os
+from datetime import datetime
 
 # Third party imports
 from fastapi import FastAPI, UploadFile, HTTPException, File, Request, Body
@@ -9,19 +10,15 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 
 # Local application imports (from image)
-from helpers import generate_uuid, query, update
 from escape_helpers import sparql_escape_string, sparql_escape_uri
 
 
 # Local application imports (from library)
 from library.Llm import LLM
-from library.Processors import BPMNProcessor, AgendapuntenProcessor
 from library.Task import TaskStatus
 from library.Worker import WorkerManager
-
-
-default_graph = os.getenv('DEFAULT_GRAPH', "http://mu.semte.ch/graphs/public")
-queue_graph = os.getenv('QUEUE_GRAPH', "http://mu.semte.ch/graphs/tasks")
+from library.Processors import DecisionProcessor
+from library.helpers import update, query, generate_uuid
 
 upload_folder = '/app/uploads/'
 
@@ -31,18 +28,21 @@ accepted_file_extensions = ['.bpmn', '.txt', '.xml']
 # Initialize the LLM
 LLM_API_KEY = os.environ.get('LLM_API_KEY', 'ollama')
 LLM_ENDPOINT = os.environ.get('LLM_ENDPOINT', 'http://ollama:11434/v1/')
-LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'llama3abb')
+LLM_MODEL_NAME = os.environ.get('LLM_MODEL_NAME', 'llama3.1:8b-instruct-q4_0')
+LLM_MODEL_URI = os.environ.get('LLM_MODEL_URI', 'https://ollama.com/library/llama3.1:8b-instruct-q4_0')
 LLM_ON_AZURE = os.environ.get('LLM_ON_AZURE', 'False').lower() == 'true'
 
+
 default_graph = os.getenv('DEFAULT_GRAPH', "http://mu.semte.ch/graphs/public")
-queue_graph = os.getenv('QUEUE_GRAPH', "http://mu.semte.ch/graphs/tasks")
+queue_graph = os.getenv('QUEUE_GRAPH', "http://mu.semte.ch/graphs/public")
+
 
 print(f"Starting LLM with endpoint: {LLM_ENDPOINT}, model: {LLM_MODEL_NAME}, azure: {LLM_ON_AZURE}, api_key: {LLM_API_KEY}")
 
-
 abb_llm = LLM(base_url = LLM_ENDPOINT, api_key = LLM_API_KEY, model_name = LLM_MODEL_NAME, azure = LLM_ON_AZURE)
-bpmn_processor = BPMNProcessor(abb_llm, taxonomy_path="/app/taxonomy_bpmn.json")
-agendapunten_processor = AgendapuntenProcessor(abb_llm, taxonomy_path="/app/taxonomy_agendapunten.json")
+
+
+""" decision_processor = DecisionProcessor(abb_llm)
 
 
 # Initialize the worker manager
@@ -50,9 +50,8 @@ worker_manager = WorkerManager(1,
                                 sleep_time=10,
                                 queue_endpoint="http://localhost/tasks",
                                 graph_endpoint="http://localhost/tasks/results",
-                                bpmn_processor=bpmn_processor,
-                                agendapunten_processor=agendapunten_processor)
-
+                                agendapunten_processor=decision_processor)
+ """
 
 # input classes for the endpoints
 class TaskInput(BaseModel):
@@ -87,7 +86,14 @@ class SummarizationInput(BaseModel):
     text: str
 
 class RawPromptInput(BaseModel):
+    system_message: str
     prompt: str
+
+class AnnotationInput(BaseModel):
+    body: str
+    motivation: str
+    annotation_type: str
+    besluit_uri: str
 
 # methods for storing the results of the tasks
 async def batch_update(queries, request : Request):
@@ -107,31 +113,65 @@ async def batch_update(queries, request : Request):
     for query in queries:
         update(query, request)
 
-def generate_insert_query(task, sparql_graph=default_graph):
+# main function for storing the results into the graph
+def generate_annotation_insert_query(annotation: AnnotationInput, sparql_graph: str = default_graph) -> str:
     """
-    Generate SPARQL INSERT queries from a dictionary.
+    Generate SPARQL INSERT query for an annotation.
 
     Parameters:
-    task (dict): The dictionary to generate queries from.
+    annotation (AnnotationInput): The annotation input model containing annotation properties. The structure should be:
+        {
+            "body": "The body of the annotation",
+            "motivation": "The motivation for the annotation",
+            "annotation_type": "The type of the annotation or type of enrichment: summarization, keywords, etc",
+            "besluit_uri": "The URI of the besluit",
+        }
     sparql_graph (str): The URI of the SPARQL graph to insert data into.
 
     Returns:
-    list: A list of SPARQL INSERT queries.
+    str: The SPARQL INSERT query.
     """
 
-    # Initialize the list of queries
-    queries = []
+    # Generate a unique UUID for the annotation
+    annotation_uuid = generate_uuid()
+    annotation_uri = f"http://data.lblod.info/annotations/{annotation_uuid}"
 
-    # Generate the query for the task
-    encoded_uri = sparql_escape_uri(f"http://deepsearch.com/{task.get('id', '')}")
-    query = "PREFIX ds: <http://deepsearch.com/llm#>"
-    query += "PREFIX mu: <http://mu.semte.ch/vocabularies/core/>"
-    query += f"INSERT DATA {{ GRAPH <{sparql_graph}> {{ {encoded_uri} a ds:Result ; ds:userInput {sparql_escape_string(task.get('user_input', ''))}; ds:task {sparql_escape_string(task.get('task', ''))} ; ds:context {sparql_escape_string(json.dumps(task.get('context', '')))} ; ds:systemMessage {sparql_escape_string(task.get('system_message', ''))} ; ds:prompt {sparql_escape_string(task.get('prompt', ''))} ; ds:response {sparql_escape_string(task.get('response', ''))} ; ds:meta {sparql_escape_string(json.dumps(task.get('meta', '')))} ; mu:uuid {sparql_escape_string(task.get('id', ''))} . }} }}"
-    queries.append(query)
+    # Get annotation-type URI
+    annotation_type_uri = f"http://data.lblod.info/annotations/annotation_types/{annotation.annotation_type}"
 
-    return queries
+    # Define prefixes
+    prefixes = """
+        PREFIX dct: <http://purl.org/dc/terms/>
+        PREFIX oa: <http://www.w3.org/ns/oa#>
+        PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+        PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+        PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
+    """
+
+    # Construct the SPARQL INSERT query
+    query = f"""
+        {prefixes}
+        INSERT DATA {{
+            GRAPH <{sparql_graph}> {{
+                {sparql_escape_uri(annotation_uri)} a oa:Annotation ;
+                    mu:uuid "{annotation_uuid}" ;
+                    oa:hasBody "{annotation.body}" ;
+                    dct:created "{datetime.now().isoformat()}"^^xsd:dateTime ;
+                    oa:motivatedBy "{annotation.motivation}" ;
+
+                    oa:hasTarget {sparql_escape_uri(annotation.besluit_uri)} ;
+                    dct:type {sparql_escape_uri(annotation_type_uri)} ;
+                    dct:creator {sparql_escape_uri(LLM_MODEL_URI)} .
+
+                {sparql_escape_uri(annotation_type_uri)} a oa:AnnotationType ;
+                    skos:prefLabel "{annotation.annotation_type}" .
+            }}
+        }}
+    """
+    return query
 
 
+""" 
 # event handlers for worker management
 @app.on_event("startup")
 async def startup_event():
@@ -147,22 +187,20 @@ async def restart_workers():
     worker_manager.start_workers()
     return {"message": "Workers restarted successfully"}
 
-
-
+ """
 # Default endpoint
 @app.get("/", response_class=HTMLResponse)
 async def root():
     return """
     <html>
         <body>
-            <p>Welcome to our llm service, for more information visit <a href="/docs">/docs</a>.</p>
+            <p>Welcome to our ABB hackathon LLM services! For more information visit <a href="/docs">/docs</a>.</p>
         </body>
     </html>
     """
 
 
 # Task queue endpoints
-
 @app.get("/tasks/{task_uuid}", tags=["tasks"])
 async def get_task(request: Request, task_uuid: str):
     """
@@ -179,23 +217,17 @@ async def get_task(request: Request, task_uuid: str):
     """
     # Create the SPARQL SELECT query
     query_string = f"""
-            PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
-            PREFIX task: <http://deepsearch.com/task#>
+        PREFIX besluit: <http://data.vlaanderen.be/ns/besluit#>
+        PREFIX dct: <http://purl.org/dc/terms/>
 
-            SELECT ?status ?type ?action ?parameters ?context ?retry_count ?log WHERE {{
-                GRAPH <{queue_graph}> {{
-                    ?task a task:Task ;
-                        mu:uuid "{task_uuid}" ;
-                        task:status ?status ;
-                        task:type ?type ;
-                        task:action ?action ;
-                        task:parameters ?parameters ;
-                        task:context ?context ;
-                        task:retry_count ?retry_count ;
-                        task:log ?log .
-                }}
+        SELECT ?uri ?title ?concept WHERE {{
+            GRAPH {sparql_escape_uri(queue_graph)} {{
+                {sparql_escape_uri(task_uuid)} a besluit:Besluit ;
+                    dct:title ?title ;
+                    dct:type ?concept .
             }}
-        """
+        }}
+    """
 
     # Execute the SPARQL SELECT query
     try:
@@ -204,202 +236,99 @@ async def get_task(request: Request, task_uuid: str):
         raise HTTPException(status_code=400, detail=str(e))
 
     # Check if a task with the given UUID exists
-    if not result:
+    if not result["results"]["bindings"]:
         raise HTTPException(status_code=404, detail="Task not found.")
 
-    # logging
+    # Logging
     print("Task found. Returning task attributes.")
     print(result)
 
     # Return the task attributes
     task = result["results"]["bindings"][0]
     return {
-            "uuid": str(task["uuid"]["value"]),
-            "status": str(task["status"]["value"]),
-            "type": str(task["type"]["value"]),
-            "action": str(task["action"]["value"]) ,
-            "parameters": json.loads(str(task["parameters"]["value"])) ,
-            "context": json.loads(str(task["context"]["value"])),
-            "retry_count": int(task["retry_count"]["value"]),
-            "log": str(task["log"]["value"]),
-        }
+        "uri": str(task["uri"]["value"]),
+        "title": str(task["title"]["value"]),
+        "concept": str(task["concept"]["value"]),
+    }
 
 @app.get("/tasks", tags=["tasks"])
-async def get_tasks(request: Request, status: TaskStatus, limit: int = 1):
+async def get_tasks(request: Request, limit: int = 1):
     """
     Get all tasks with a specified status.
 
-    This function receives a status, queries the task queue in the application graph 
-    for tasks with the given status, and returns all their attributes.
+    This function queries the task queue in the application graph 
+    for tasks and returns a fixed number of items.
 
     Args:
-        status (str): The status of the tasks to retrieve.
         limit (int): The maximum number of tasks to retrieve.
 
     Returns:
         list: A list of tasks with their attributes.
     """
+    print("Triggered get_tasks")
     # Create the SPARQL SELECT query
     query_string = f"""
-        PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
-        PREFIX task: <http://deepsearch.com/task#>
-
-        SELECT ?uuid ?type ?action ?parameters ?context ?retry_count ?log WHERE {{
-            GRAPH <{queue_graph}> {{
-                ?task a task:Task ;
-                    mu:uuid ?uuid ;
-                    task:status "{status.value}" ;
-                    task:type ?type ;
-                    task:action ?action ;
-                    task:parameters ?parameters ;
-                    task:context ?context ;
-                    task:retry_count ?retry_count ;
-                    task:log ?log .
+            PREFIX besluit: <http://data.vlaanderen.be/ns/besluit#>
+            PREFIX dct: <http://purl.org/dc/terms/>
+            PREFIX oa: <http://www.w3.org/ns/oa#>
+    
+            SELECT ?decision ?title ?concept
+            WHERE {{
+                GRAPH {sparql_escape_uri(queue_graph)} {{
+                    ?decision a besluit:Besluit .
+    
+                    # Optionally retrieve title and concept
+                    OPTIONAL {{ ?decision dct:title ?title . }}
+                    OPTIONAL {{ ?decision dct:type ?concept . }}
+    
+                    # Ensure there are no annotations linked via oa:hasTarget
+                    FILTER NOT EXISTS {{
+                        ?annotation a oa:Annotation ;
+                                    oa:hasTarget ?decision .
+                    }}
+                }}
             }}
-        }}
-        LIMIT {limit}
-    """
-
+            LIMIT {limit}
+        """
     # Execute the SPARQL SELECT query
+    print("Executing query", query_string)
     try:
         result = query(query_string, request)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    # Check if any tasks with the given status exist
-    if not result:
-        raise HTTPException(status_code=404, detail="No tasks found with the specified status.")
-
-    # Return the task attributes
     tasks = result["results"]["bindings"]
+    if not tasks:
+        raise HTTPException(status_code=404, detail="No tasks found.")
+
     return [
         {
-            "uuid": str(task["uuid"]["value"]),
-            "status": status,
-            "type": str(task["type"]["value"]),
-            "action": str(task["action"]["value"]) ,
-            "parameters": json.loads(str(task["parameters"]["value"])) ,
-            "context": json.loads(str(task["context"]["value"])),
-            "retry_count": int(task["retry_count"]["value"]),
-            "log": str(task["log"]["value"]),
+            "uri": task["decision"]["value"],
+            "title": task.get("title", {}).get("value", ""),
+            "concept": task.get("concept", {}).get("value", ""),
         }
         for task in tasks
     ]
 
-@app.post("/tasks/json", tags=["tasks"])
-async def create_task(request: Request, task: TaskInput):
-    """
-    Create a new task in the task queue.
-
-    This function receives a task object, generates a UUID for the task, 
-    and inserts the task into the task queue in the application graph.
-
-    Args:
-        task (TaskInput): The task object to be created.
-
-    Returns:
-        dict: A dictionary containing the UUID of the created task.
-    """
-    # Generate a UUID for the task
-    task_id = generate_uuid()
-
-    # Create the task URI
-    task_uri = f"http://deepsearch.com/tasks/{task_id}"
-
-    # Create the SPARQL INSERT query
-    query = f"""
-        PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
-        PREFIX task: <http://deepsearch.com/task#>
-
-        INSERT DATA {{
-            GRAPH <{queue_graph}> {{
-                <{task_uri}> a task:Task ;
-                    mu:uuid "{task_id}" ;
-                    task:status "{TaskStatus.PENDING.value}" ;
-                    task:type "{task.type}" ;
-                    task:action "{task.action}" ;
-                    task:parameters {sparql_escape_string(json.dumps(task.parameters))} ;
-                    task:context {sparql_escape_string(json.dumps(task.context))} ;
-                    task:retry_count "0" ;
-                    task:log "" .
-            }}
-        }}
-    """
-        # Execute the SPARQL INSERT query
-    try:
-        update(query, request)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    return JSONResponse(content={"task": task_id})
-
-@app.post("/tasks/file", tags=["tasks"])
-async def create_task_with_file(request: Request, task: TaskInput, file: UploadFile):
-    """
-    Create a new task in the task queue with a file.
-
-    This function receives a task object and a file, generates a UUID for the task, 
-    and inserts the task into the task queue in the application graph. The file path is added to the task context.
-
-    Args:
-        task (TaskInput): The task object to be created.
-        file (UploadFile): The file to be associated with the task.
-
-    Returns:
-        dict: A dictionary containing the UUID of the created task.
-    """
-    # Generate a UUID for the task
-    task_id = generate_uuid()
-
-    # Create the task URI
-    task_uri = f"http://deepsearch.com/tasks/{task_id}"
-
-    # Add the file path to the task context
-    task.context["data"] = file.filename
-
-    # Create the SPARQL INSERT query
-    query = f"""
-        PREFIX mu: <http://mu.semte.ch/vocabularies/core/>
-        PREFIX task: <http://deepsearch.com/task#>
-
-        INSERT DATA {{
-            GRAPH <{queue_graph}> {{
-                <{task_uri}> a task:Task ;
-                    mu:uuid "{task_id}" ;
-                    task:status "{TaskStatus.PENDING.value}" ;
-                    task:type "{task.type}" ;
-                    task:action "{task.action}" ;
-                    task:parameters {sparql_escape_string(json.dumps(task.parameters))} ;
-                    task:context {sparql_escape_string(json.dumps(task.context))} ;
-                    task:retry_count "0" ;
-                    task:log "" .
-            }}
-        }}
-    """
-    # Execute the SPARQL INSERT query
-    try:
-        update(query, request)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    return JSONResponse(content={"task": task_id})
-
+# storing results back to the graph
 @app.post("/tasks/results", tags=["tasks"])
-async def store_task_results(request: Request, task: TaskResultInput, sparql_graph: Optional[str] = default_graph):
+async def store_task_results(request: Request, annotation: AnnotationInput, sparql_graph: Optional[str] = default_graph):
     """
     Endpoint for generating SPARQL INSERT queries from a dictionary.
 
     Parameters:
-    task (TaskInput): The dictionary to generate queries from containing the id, result, and status of the task.
+    graph_dict (dict): The dictionary to generate queries from.
     sparql_graph (str): The URI of the SPARQL graph to insert data into.
 
     Returns:
     list: A list of SPARQL INSERT queries.
     """
     try:
-        queries = generate_insert_query(task.dict(), sparql_graph)
+        query = generate_annotation_insert_query(annotation, sparql_graph)
+        print(f"Generated query: {query}")
         # Assuming batch_update is an async function
-        await batch_update(queries, request)
+
+        await update(query, request)
 
         return {"status": "success", "message": "Batch update completed successfully"}
     except Exception as e:
@@ -449,7 +378,7 @@ async def translate_text(translation_input: TranslationInput):
         raise HTTPException(status_code=400, detail=str(e))
     
 @app.post("/extract_keywords", tags=["text"])
-async def extract_keywords_text(text: str):
+async def extract_keywords_text(keyword_input: KeywordExtractionInput):
     """
     Extracts keywords from the given text.
 
@@ -474,7 +403,7 @@ async def extract_keywords_text(text: str):
         {"keywords": ["Computer Vision", "Natural Language Processing", "Machine Learning"]}
     """
     try:
-        keywords = abb_llm.extract_keywords_text(KeywordExtractionInput.text)
+        keywords = abb_llm.extract_keywords_text(keyword_input.text)
         return keywords
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -562,24 +491,25 @@ async def raw_prompt(raw_prompt_input: RawPromptInput):
     Returns:
         dict: A dictionary containing the response to the raw prompt.
 
-    Raises:
+    Raises:w
         HTTPException: If there's an error during the processing of the raw prompt.
 
     Example:
-        To use this endpoint, you can send a POST request to `/raw_prompt` with a JSON body like this:
+        To use this endpoint, you can send a POST request to `/raw_prompt` with a JSON body like this, the system message or prompt should mention "JSON". 
+        Best explicitly give the expected JSON format as an example in the prompt.
 
         {
-            "prompt": "Tell me a joke."
+            "prompt": "Tell me a joke. Return it as a JSON object with the following format: {\"joke\": \"the joke itself\"}"
         }
 
         The response will be a dictionary containing the response to the raw prompt, like this:
 
         {
-            "response": "Why did the scarecrow win an award? Because he was outstanding in his field!"
+            "joke": "Why did the scarecrow win an award? Because he was outstanding in his field!"
         }
     """
     try:
-        response = abb_llm.process_raw_prompt(raw_prompt_input.prompt)
+        response = abb_llm.process_raw_prompt(raw_prompt_input.system_message, raw_prompt_input.prompt)
         return response
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
