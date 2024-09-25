@@ -7,3 +7,5 @@
 docker-compose.override.yml
 
 /ollama_models
+/data/db-bkup
+data/db/toLoad/output000001.nq.gz

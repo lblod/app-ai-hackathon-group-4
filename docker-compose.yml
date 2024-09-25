@@ -15,9 +15,7 @@ services:
       - ./llm:/app/
 
   ollama: # This is for the local version of the LLM that runs within the stack
-    image: ollama/ollama:0.3.11
-    ports:
-      - 11434:11434
+    image: ollama/ollama:0.3.11      
     restart: always
     environment:
       - OLLAMA_HOST=0.0.0.0
