@@ -23,7 +23,6 @@
 <http://mu.semte.ch/ontology> dc:description "Generated resource ontology". 
 
 ext:AnnotationFeedback rdf:type owl:Class;
-   rdfs:subClassOf oa:Annotation;
   rdfs:label "annotation-feedback".
 oa:Annotation rdf:type owl:Class;
   rdfs:label "annotation".
@@ -54,16 +53,16 @@ ext:rating rdf:type owl:DatatypeProperty;
   rdfs:label "rating";
   rdfs:range rdfs:Literal;
   rdfs:domain ext:AnnotationFeedback.
-oa:hasBody rdf:type owl:DatatypeProperty;
-  rdfs:comment "Resources type is string";
-  rdfs:label "body";
-  rdfs:range rdfs:Literal;
-  rdfs:domain oa:Annotation.
 dct:created rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is datetime";
   rdfs:label "creation";
   rdfs:range rdfs:Literal;
   rdfs:domain _:union0.
+oa:hasBody rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string";
+  rdfs:label "body";
+  rdfs:range rdfs:Literal;
+  rdfs:domain oa:Annotation.
 oa:motivatedBy rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string";
   rdfs:label "motivation";
@@ -129,6 +128,16 @@ dct:title rdf:type owl:DatatypeProperty;
   rdfs:label "title";
   rdfs:range rdfs:Literal;
   rdfs:domain besluit:Besluit.
+ext:oeBesluitUri rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is url";
+  rdfs:label "besluituri";
+  rdfs:range rdfs:Literal;
+  rdfs:domain besluit:Besluit.
+ext:dowloadLink rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is url";
+  rdfs:label "download";
+  rdfs:range rdfs:Literal;
+  rdfs:domain besluit:Besluit.
 
 
 ext:hasFeedback rdf:type owl:FunctionalProperty, owl:ObjectProperty;
@@ -147,9 +156,14 @@ dct:creator rdf:type owl:InverseFunctionalProperty, owl:ObjectProperty;
   rdfs:domain oa:Annotation;
   rdfs:range foaf:Agent.
 oa:hasTarget rdf:type owl:InverseFunctionalProperty, owl:ObjectProperty;
-  rdfs:comment "Names are about.";
-  rdfs:label "about";
+  rdfs:comment "Names are - annotations, about.";
+  rdfs:label "annotations";
   rdfs:domain oa:Annotation;
+  rdfs:range besluit:Besluit.
+ext:relatedDecision rdf:type owl:FunctionalProperty, owl:ObjectProperty;
+  rdfs:comment "Names are - aanduidingsobject, decisions.";
+  rdfs:label "aanduidingsobject";
+  rdfs:domain cidoc:E22_Man-Made_Object;
   rdfs:range besluit:Besluit.
 cidoc:P53_has_former_or_current_location rdf:type owl:InverseFunctionalProperty, owl:ObjectProperty;
   rdfs:comment "Names are - references, address.";
@@ -164,7 +178,7 @@ cidoc:P2_has_type rdf:type owl:InverseFunctionalProperty, owl:ObjectProperty;
 
 
 _:union0 rdf:type owl:Class;
-  owl:unionOf (cidoc:E22_Man-Made_Object oa:Annotation).
+  owl:unionOf (cidoc:E22_Man-Made_Object ext:AnnotationFeedback oa:Annotation).
 _:union1 rdf:type owl:Class;
   owl:unionOf (ext:AnnotationType skos:Concept).
 _:union2 rdf:type owl:Class;

@@ -43,10 +43,10 @@ abb_llm = LLM(base_url = LLM_ENDPOINT, api_key = LLM_API_KEY, model_name = LLM_M
 
 
 annotation_type_mapping = {
-    'summary':'annot:e2d9bd23-e478-411b-a461-ad2fe9b13e30',
-    'allowed_actions': 'annot:315aa3eb-06bd-4e03-ab0c-48c8d5449e92',
-    'requires_permit': 'annot:b9c6e507-08b7-4715-9c85-34f04270179d',
-    'keywords': 'annot:b9c6e507-08b7-4715-9c85-34f04270179d'
+    'summary':'e2d9bd23-e478-411b-a461-ad2fe9b13e30',
+    'allowed_actions': '315aa3eb-06bd-4e03-ab0c-48c8d5449e92',
+    'requires_permit': 'b9c6e507-08b7-4715-9c85-34f04270179d',
+    'keywords': 'f3b9dfe8-4cab-4747-be76-5cd59c07cae6'
 }
 
 """ decision_processor = DecisionProcessor(abb_llm)
@@ -176,7 +176,7 @@ def generate_annotation_insert_query(annotation: AnnotationInput, sparql_graph: 
     return query
 
 
-""" 
+"""
 # event handlers for worker management
 @app.on_event("startup")
 async def startup_event():
@@ -213,7 +213,7 @@ async def get_tasks(request: Request, limit: int = 1):
     """
     Get all tasks with a specified status.
 
-    This function queries the task queue in the application graph 
+    This function queries the task queue in the application graph
     for tasks and returns a fixed number of items.
 
     Args:
@@ -236,11 +236,11 @@ async def get_tasks(request: Request, limit: int = 1):
                     ?decision a besluit:Besluit;
                        ext:dowloadLink ?downloadLink.
 
-    
+
                     # Optionally retrieve title and concept
                     OPTIONAL {{ ?decision dct:title ?title . }}
                     OPTIONAL {{ ?decision dct:type ?concept . }}
-    
+
                     # Ensure there are no annotations linked via oa:hasTarget
                     FILTER NOT EXISTS {{
                         ?annotation a oa:Annotation ;
@@ -316,19 +316,19 @@ async def store_task_results(request: Request, annotation: AnnotationInput, spar
 async def translate_text(translation_input: TranslationInput):
     """
     Translates the given text to the specified language.
-    
+
     Args:
         translation_input (TranslationInput): An object containing the text to be translated, the target language, and the format of the response.
-    
+
     Returns:
         dict: A dictionary containing the translated text, the source language, and the target language.
-    
+
     Raises:
         HTTPException: If there's an error during the translation.
-    
+
     Example:
         To use this endpoint, you can send a POST request to `/translate` with a JSON body like this:
-    
+
         {
             "text": "Dit is een zin die vertaald moet worden naar het Engels.",
             "language": "en",
@@ -338,9 +338,9 @@ async def translate_text(translation_input: TranslationInput):
                 "target_language": "Target language"
             }
         }
-    
+
         The response will be a dictionary containing the translated text, the source language, and the target language, like this:
-    
+
         {
             "text": "This is a sentence that needs to be translated into English.",
             "Source": "nl",
@@ -352,7 +352,7 @@ async def translate_text(translation_input: TranslationInput):
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
 @app.post("/extract_keywords", tags=["text"])
 async def extract_keywords_text(keyword_input: KeywordExtractionInput):
     """
@@ -383,7 +383,7 @@ async def extract_keywords_text(keyword_input: KeywordExtractionInput):
         return keywords
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
 @app.post("/classify_text", tags=["text"])
 async def classify_text(text: str, classification_taxonomy: ClassificationInputTaxonomy):
     """
@@ -403,13 +403,13 @@ async def classify_text(text: str, classification_taxonomy: ClassificationInputT
         To use this endpoint, you can send a POST request to `/classify_text` with a JSON body like this:
 
         {
-            
+
                 "taxonomy": {
                     "Computer science": ["Computer Vision", "Natural Language Processing", "Machine Learning"],
                     "Physics": ["Quantum Mechanics", "General Relativity"],
                     "Biology": ["Evolution", "Genetics"]
                 }
-            
+
         }
 
         The response will be the classification of the text, like this:
@@ -471,7 +471,7 @@ async def raw_prompt(raw_prompt_input: RawPromptInput):
         HTTPException: If there's an error during the processing of the raw prompt.
 
     Example:
-        To use this endpoint, you can send a POST request to `/raw_prompt` with a JSON body like this, the system message or prompt should mention "JSON". 
+        To use this endpoint, you can send a POST request to `/raw_prompt` with a JSON body like this, the system message or prompt should mention "JSON".
         Best explicitly give the expected JSON format as an example in the prompt.
 
         {

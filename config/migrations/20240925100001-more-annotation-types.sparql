@@ -1,0 +1,18 @@
+prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+prefix skos:	<http://www.w3.org/2004/02/skos/core#>
+prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
+prefix mu:   <http://mu.semte.ch/vocabularies/core/>
+prefix conceptschemes: <http://lblod.data.gift/concept-schemes/>
+prefix annot:  <http://data.vlaanderen.be/id/concept/annotatie-types/>
+prefix ext: <http://mu.semte.ch/vocabularies/ext/>
+
+INSERT DATA {
+  GRAPH <http://mu.semte.ch/graphs/public> {
+      annot:f3b9dfe8-4cab-4747-be76-5cd59c07cae6
+          mu:uuid "f3b9dfe8-4cab-4747-be76-5cd59c07cae6";
+        a skos:Concept, ext:AnnotationType;
+        skos:prefLabel "AI Keyword" ;
+        skos:topConceptOf conceptschemes:annotation-types;
+        skos:inScheme conceptschemes:annotation-types.
+  }
+}

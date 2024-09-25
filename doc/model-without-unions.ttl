@@ -23,7 +23,6 @@
 <http://mu.semte.ch/ontology> dc:description "Generated resource ontology". 
 
 ext:AnnotationFeedback rdf:type owl:Class;
-   rdfs:subClassOf oa:Annotation;
   rdfs:label "annotation-feedback".
 oa:Annotation rdf:type owl:Class;
   rdfs:label "annotation".
@@ -54,11 +53,6 @@ ext:rating rdf:type owl:DatatypeProperty;
   rdfs:label "rating";
   rdfs:range rdfs:Literal;
   rdfs:domain ext:AnnotationFeedback.
-oa:hasBody rdf:type owl:DatatypeProperty;
-  rdfs:comment "Resources type is string.  Original predicate is oa:hasBody.";
-  rdfs:label "body";
-  rdfs:range rdfs:Literal;
-  rdfs:domain oa:Annotation.
 ext:local_id_1 rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is datetime.  Original predicate is dct:created.";
   rdfs:label "creation";
@@ -67,6 +61,16 @@ ext:local_id_1 rdf:type owl:DatatypeProperty;
 ext:local_id_2 rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is datetime.  Original predicate is dct:created.";
   rdfs:label "created";
+  rdfs:range rdfs:Literal;
+  rdfs:domain oa:Annotation.
+ext:local_id_3 rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is datetime.  Original predicate is dct:created.";
+  rdfs:label "created";
+  rdfs:range rdfs:Literal;
+  rdfs:domain ext:AnnotationFeedback.
+oa:hasBody rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is string.  Original predicate is oa:hasBody.";
+  rdfs:label "body";
   rdfs:range rdfs:Literal;
   rdfs:domain oa:Annotation.
 oa:motivatedBy rdf:type owl:DatatypeProperty;
@@ -99,12 +103,12 @@ ext:artStyle rdf:type owl:DatatypeProperty;
   rdfs:label "style";
   rdfs:range rdfs:Literal;
   rdfs:domain cidoc:E22_Man-Made_Object.
-ext:local_id_3 rdf:type owl:DatatypeProperty;
+ext:local_id_4 rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string.  Original predicate is skos:prefLabel.";
   rdfs:label "title";
   rdfs:range rdfs:Literal;
   rdfs:domain ext:AnnotationType.
-ext:local_id_4 rdf:type owl:DatatypeProperty;
+ext:local_id_5 rdf:type owl:DatatypeProperty;
   rdfs:comment "Resources type is string.  Original predicate is skos:prefLabel.";
   rdfs:label "title";
   rdfs:range rdfs:Literal;
@@ -139,24 +143,34 @@ dct:title rdf:type owl:DatatypeProperty;
   rdfs:label "title";
   rdfs:range rdfs:Literal;
   rdfs:domain besluit:Besluit.
+ext:oeBesluitUri rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is url.  Original predicate is ext:oeBesluitUri.";
+  rdfs:label "besluituri";
+  rdfs:range rdfs:Literal;
+  rdfs:domain besluit:Besluit.
+ext:dowloadLink rdf:type owl:DatatypeProperty;
+  rdfs:comment "Resources type is url.  Original predicate is ext:dowloadLink.";
+  rdfs:label "download";
+  rdfs:range rdfs:Literal;
+  rdfs:domain besluit:Besluit.
 
 
-ext:local_id_5 rdf:type owl:ObjectProperty;
+ext:local_id_6 rdf:type owl:ObjectProperty;
   rdfs:comment "Original relationship is ext:hasFeedback";
   rdfs:label "feedback";
   rdfs:domain oa:Annotation;
   rdfs:range ext:AnnotationFeedback.
-ext:local_id_6 rdf:type owl:ObjectProperty;
+ext:local_id_7 rdf:type owl:ObjectProperty;
   rdfs:comment "Original relationship is ext:hasFeedback";
   rdfs:label "annotation";
   rdfs:domain ext:AnnotationFeedback;
   rdfs:range ext:AnnotationFeedback.
-ext:local_id_7 rdf:type owl:ObjectProperty;
+ext:local_id_8 rdf:type owl:ObjectProperty;
   rdfs:comment "Original relationship is dct:type";
   rdfs:label "kind";
   rdfs:domain besluit:Besluit;
   rdfs:range skos:Concept.
-ext:local_id_8 rdf:type owl:ObjectProperty;
+ext:local_id_9 rdf:type owl:ObjectProperty;
   rdfs:comment "Original relationship is dct:type";
   rdfs:label "annotation-type";
   rdfs:domain oa:Annotation;
@@ -170,6 +184,11 @@ oa:hasTarget rdf:type owl:ObjectProperty;
   rdfs:comment "";
   rdfs:label "about";
   rdfs:domain oa:Annotation;
+  rdfs:range besluit:Besluit.
+ext:relatedDecision rdf:type owl:ObjectProperty;
+  rdfs:comment "";
+  rdfs:label "decisions";
+  rdfs:domain cidoc:E22_Man-Made_Object;
   rdfs:range besluit:Besluit.
 cidoc:P53_has_former_or_current_location rdf:type owl:ObjectProperty;
   rdfs:comment "";

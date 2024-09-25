@@ -3,15 +3,15 @@ set namespaceSeparator none
 class "annotation-feedbacks"
 "annotation-feedbacks" : feedback
 "annotation-feedbacks" : rating
+"annotation-feedbacks" : created
 "annotation-feedbacks" --> "1" "annotation-feedbacks" : annotation > 
-"annotations" <|-- "annotation-feedbacks"
 class "annotations"
 "annotations" : body
 "annotations" : created
 "annotations" : motivation
 "annotations" --> "1" "annotation-types" : annotation-type > 
 "annotations" --> "1" "agents" : creator > 
-"annotations" --> "1" "besluiten" : about > 
+"annotations" --> "1" "besluits" : about > 
 "annotations" --> "*" "annotation-feedbacks" : feedback > 
 class "agents"
 "agents" : name
@@ -22,23 +22,28 @@ class "aanduidingsobjects"
 "aanduidingsobjects" : identifier
 "aanduidingsobjects" : style
 "aanduidingsobjects" : creation
-"aanduidingsobjects" --> "1" "address-representations" : address > 
+"aanduidingsobjects" --> "1" "addresses" : address > 
 "aanduidingsobjects" --> "1" "concepts" : typology > 
+"aanduidingsobjects" --> "*" "besluits" : decisions > 
 class "concepts"
 "concepts" : title
-class "address-representations"
-"address-representations" : municipality-name
-"address-representations" : province
-"address-representations" : street-name
-"address-representations" : postal-code
-"address-representations" : bus-number
-"address-representations" --> "*" "aanduidingsobjects" : references > 
-"NIL" <|-- "address-representations"
-class "NIL"
+class "addresses"
+"addresses" : municipality-name
+"addresses" : province
+"addresses" : street-name
+"addresses" : postal-code
+"addresses" : bus-number
+"addresses" --> "*" "aanduidingsobjects" : references > 
+"locations" <|-- "addresses"
+class "locations"
 class "annotation-types"
 "annotation-types" : title
 "concepts" <|-- "annotation-types"
-class "besluiten"
-"besluiten" : title
-"besluiten" --> "1" "concepts" : kind > 
+class "besluits"
+"besluits" : title
+"besluits" : besluituri
+"besluits" : download
+"besluits" --> "1" "concepts" : kind > 
+"besluits" --> "1" "aanduidingsobjects" : aanduidingsobject > 
+"besluits" --> "*" "annotations" : annotations > 
 @enduml
