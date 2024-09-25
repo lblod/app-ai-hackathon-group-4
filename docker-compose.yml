@@ -18,7 +18,8 @@ services:
     image: svercoutere/hackathon-ollama:latest
     environment:
       OLLAMA_MODEL: "llama3.1:8b-instruct-q4_0" #create the following based on the /models/<modelname>/<modelname>.modelfile
-
+  pdfsummarization:
+    image: lblod/pdf-summarization-ai-hackathon-group-4-service
   identifier:
     image: semtech/mu-identifier:1.10.3
     environment:
