@@ -1,61 +1,67 @@
 import json
+import logging
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class DecisionProcessor:
     def __init__(self, llm_model):
+        logging.info("Initializing DecisionProcessor")
         self.llm_model = llm_model
 
-    def extract_keywords(self, agendapunt):
-        # Convert the JSON object to a string
-        text = json.dumps(agendapunt)
+    def extract_keywords(self, text):
+        logging.info("Extracting keywords within the LLM class")
+        try:
+            prompt_string, system_message, _, _ = self.llm_model.generate_keyword_task(text)
+            response = self.llm_model.generate_response(system_message, prompt_string, stream=False, json_mode=True)
+            logging.debug(f"Generated response: {response}")
 
-        # Generate the classification task
-        prompt_string, system_message, task_string, context = self.llm_model.generate_keyword_task(text)
+            response_json = self.llm_model.extract_json(response)
+            logging.info("Keywords extracted successfully")
+            return response_json
+        except Exception as e:
+            logging.error(f"Error extracting keywords: {e}")
+            raise
 
-        # Generate the response using OpenAI (or any other method)
-        response = self.llm_model.generate_response(system_message, prompt_string, stream=False, json_mode=True)
-        response_json = self.llm_model.extract_json(response)
+    def translate(self, text, language, text_format=None):
+        logging.info("Translating text")
+        try:
+            if text_format is None:
+                text_format = """{'id': 'Do not translate', 'name': 'Translated Name', 'source': 'Source language', 'target': 'Target language'}"""
+            logging.debug(f"Using text_format: {text_format}")
 
-        if response_json is not None:
-            task_info = self.llm_model.get_task_info("keywords_agendapunt", "keywords", "keywords_agendapunt", "json", "json")
-            saveable = self.llm_model.formatted_results(task_info, text, task_string, context, system_message, prompt_string, response)
+            prompt_string, system_message, task_string, context = self.llm_model.generate_translation_task(text, language, text_format)
+            logging.debug(f"Generated translation task: {prompt_string}")
 
-        return response_json, saveable
+            response = self.llm_model.generate_response(system_message, prompt_string)
+            logging.debug(f"Generated response: {response}")
 
-    def translate(self, agendapunt, language, agenda_punten_format = None):
+            response_json = self.llm_model.extract_json(response)
+            logging.info("Translation completed successfully")
+            return response_json
+        except Exception as e:
+            logging.error(f"Error translating text: {e}")
+            raise
 
-        if agenda_punten_format is None:
-            agenda_punten_format = """{'id': 'Do not translate', 'name': 'Translated Name', 'source': 'Source language', 'target': 'Target language'}"""
+    def classify(self, text, taxonomy=None):
+        logging.info("Classifying text")
+        try:
+            if taxonomy is None:
+                taxonomy = self.taxonomy
+            logging.debug(f"Using taxonomy: {taxonomy}")
 
-        prompt_string, system_message, task_string, context = self.llm_model.generate_translation_task(agendapunt, language, agenda_punten_format)
-        response = self.llm_model.generate_response(system_message,prompt_string)
+            text_json = json.dumps(text)
+            logging.debug(f"Converted text to JSON string: {text_json}")
 
-        response_json = self.llm_model.extract_json(response)
+            prompt_string, system_message, _, _ = self.llm_model.generate_classification_task(text_json, taxonomy)
+            logging.debug(f"Generated classification task: {prompt_string}")
 
-        if response_json is not None:
-            task_info = self.llm_model.get_task_info("translate_agendapunt", "translate", "translate_agendapunt", "json", "json", language)
-            saveable = self.llm_model.formatted_results(task_info, None, task_string, context, system_message, prompt_string, response)
+            response = self.llm_model.generate_response(system_message, prompt_string, stream=False, json_mode=False)
+            logging.debug(f"Generated response: {response}")
 
-        return response_json, saveable
-    
-    def classify(self, agendapunt, taxonomy = None):
-    
-        if taxonomy is None:
-            taxonomy = self.taxonomy
-            
-        # Convert the JSON object to a string
-        text = json.dumps(agendapunt)
-
-        # Generate the classification task
-        prompt_string, system_message, task_string, context = self.llm_model.generate_classification_task(text, taxonomy)
-
-        # Generate the response using OpenAI (or any other method)
-        response = self.llm_model.generate_response(system_message, prompt_string, stream=False, json_mode=False)
-        response_json = self.llm_model.extract_json(response)
-
-        if response_json is not None:
-            task_info = self.llm_model.get_task_info("classification_agendapunt", "classification", "classification_agendapunt", "json", "json") 
-            saveable = self.llm_model.formatted_results(task_info, text, task_string, context, system_message, prompt_string, response)
-
-        return response_json, saveable
-    
+            response_json = self.llm_model.extract_json(response)
+            logging.info("Classification completed successfully")
+            return response_json
+        except Exception as e:
+            logging.error(f"Error classifying text: {e}")
+            raise

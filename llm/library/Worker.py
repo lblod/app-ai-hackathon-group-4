@@ -3,106 +3,140 @@ import time
 import json
 import threading
 import concurrent.futures
+import logging
 from library.Task import Task, TaskStatus
-from library.Queue import Queue
+from escape_helpers import sparql_escape_string, sparql_escape_uri
+
+import pymupdf4llm
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class WorkerManager:
-    def __init__(self, worker_count, queue_endpoint, graph_endpoint, sleep_time = 5, **kwargs):
+    def __init__(self, worker_count, fetch_endpoint, post_endpoint, sleep_time=5, **kwargs):
+        logging.info("Initializing WorkerManager")
         self.worker_count = worker_count
-        self.queue_endpoint = queue_endpoint
-        self.graph_endpoint = graph_endpoint
+        self.fetch_endpoint = fetch_endpoint
+        self.post_endpoint = post_endpoint
         self.sleep_time = sleep_time
 
         for key, value in kwargs.items():
             setattr(self, key, value)
 
-        self.workers = [Worker(queue_endpoint, graph_endpoint, sleep_time, **kwargs) for _ in range(worker_count)]
+        self.workers = [Worker(fetch_endpoint, post_endpoint, sleep_time, **kwargs) for _ in range(worker_count)]
+        logging.info(f"Initialized {worker_count} workers")
 
     def start_workers(self):
+        logging.info("Starting workers")
         for worker in self.workers:
             worker.reset()
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=self.worker_count)
         self.futures = [self.executor.submit(worker.work) for worker in self.workers]
+        logging.info("Workers started")
 
     def stop_workers(self):
+        logging.info("Stopping workers")
         for worker in self.workers:
             worker.stop()
         self.executor.shutdown(wait=True)
+        logging.info("Workers stopped")
 
 class Worker:
-    def __init__(self, queue_endpoint, graph_endpoint, sleep_time, **kwargs):
-        self.queue_endpoint = queue_endpoint
-        self.graph_endpoint = graph_endpoint
-        self.queue = Queue.get_instance(queue_endpoint)
-        self.stop_event = threading.Event()  # Replace stop_flag with an Event
-        self.sleep_time = sleep_time  # Add sleep time
+    def __init__(self, fetch_endpoint, post_endpoint, sleep_time, **kwargs):
+        logging.info("Initializing Worker")
+        self.fetch_endpoint = fetch_endpoint
+        self.post_endpoint = post_endpoint
+        self.stop_event = threading.Event()
+        self.sleep_time = sleep_time
 
         for key, value in kwargs.items():
             setattr(self, key, value)
+        logging.info("Worker initialized")
 
-
-    def post_results(self, task, results):
-        # perform post request to the results_endpoint
-        response = requests.post(self.graph_endpoint, json=results)
-
-
-        response_data = response.json()
-        if response.status_code != 200:
-            error_message = "Failed to post results. "
-            error_message += f"Failed for following post request: {results}. "
-            error_message += f"Error server response: {response_data}. "
-
-            raise Exception(error_message)
-    
-        else:
-            #print(f"Results posted successfully. Inserted {num_nodes} nodes.")
-            task.update_log(f"Inserted {task.uuid} into the graph.")
-    
-    def process_task(self, task):
-        task.update_status(TaskStatus.RUNNING)
-    
+    def post_results(self, uri, result_type, results):
+        logging.info(f"Posting results for {uri}")
+        logging.debug(f"Going to post following: {results}")
+        data = {
+            "body": sparql_escape_string(results),
+            "motivation": "-enrichment process-",
+            "annotation_type": result_type,
+            "besluit_uri": uri
+        }
         try:
-            if hasattr(self, 'agendapunten_processor') and task.type == "agendapunt":
-                processor = self.agendapunten_processor
-            elif hasattr(self, 'bpmn_processor') and task.type == "bpmn":
-                processor = self.bpmn_processor
-            else:
-                print("Processor not found for: ", task.type)
-                # Handle the case where the processor does not exist
-                
-            if processor:
-                if task.action == "extract_keywords":
-                    response, results = processor.extract_keywords(task.context["data"], **task.parameters)
-                elif task.action == "classify":
-                    response, results = processor.classify(task.context["data"], **task.parameters)
-                elif task.action == "translate":
-                    response, results = processor.translate(task.context["data"], **task.parameters)
-            print("response from llm-worker: ", response)
-            self.post_results(task, results)
-            print("Results posted successfully. Inserted into the graph.")
-            task.update_status(TaskStatus.COMPLETED)
+            response = requests.post(self.post_endpoint, json=data)
+            response.raise_for_status()
+            logging.info(f"Results posted successfully for {uri}")
+        except requests.exceptions.RequestException as e:
+            error_message = f"Failed to post results for {uri}: {e}"
+            logging.info(error_message)
+            raise Exception(error_message)
 
-    
+    def process_task(self, task):
+        logging.info(f"Processing task: {task}")
+        try:
+            if hasattr(self, 'processor'):
+                processor = self.processor
+            else:
+                logging.info("Processor not found.")
+                return
+
+            besluit_uri = task.get("uri", "")
+            download_link = task.get("downloadLink", "")
+
+            if download_link:
+                local_filename = "downloaded_file_tmp.pdf"
+                try:
+                    logging.info(f"Fetching file from {download_link}")
+                    response = requests.get(download_link)
+                    response.raise_for_status()
+
+                    with open(local_filename, 'wb') as f:
+                        f.write(response.content)
+                    logging.info(f"File downloaded successfully: {local_filename}")
+
+                    content = pymupdf4llm.to_markdown(local_filename)
+
+                    results = processor.extract_keywords(content)
+                    logging.info(f"Keywords extracted: {results}")
+                    
+                    # Ensure results is always a string
+                    if isinstance(results, dict):
+                        results_str = json.dumps(results)
+                        logging.info(f"Results converted to JSON string: {results_str}")
+                    else:
+                        results_str = str(results)
+                        logging.info(f"Results is already a string: {results_str}")
+
+                    self.post_results(besluit_uri, "keywords", results_str)
+
+                except Exception as e:
+                    error_message = f"Failed to process task (processing or post): {e}"
+                    logging.info(error_message)
+
         except Exception as e:
             error_message = f"Failed to process task: {e}"
-            task.update_log(error_message)
-    
-            # If the graph processing fails, set task status to failed
-            task.update_status(TaskStatus.FAILED)
-    
+            logging.info(error_message)
+
     def stop(self):
-        self.stop_event.set()  # Set the stop event
+        logging.info("Stopping worker")
+        self.stop_event.set()
 
     def reset(self):
-        self.stop_event.clear()  # Clear the stop event
-        
-    def work(self):
-        while not self.stop_event.is_set():  # Check the stop event
-            task = self.queue.get_pending_task()
-            if task:
-                print(f"Processing task: {task.uuid}")
-                self.process_task(task)
-            else:
-                print(f"No pending tasks. Sleeping for {self.sleep_time} seconds...")
-                self.stop_event.wait(self.sleep_time)  # Wait for stop event or sleep time
+        logging.info("Resetting worker")
+        self.stop_event.clear()
 
+    def work(self):
+        logging.info("Worker started working")
+        while not self.stop_event.is_set():
+            try:
+                tasks = requests.get(self.fetch_endpoint).json()
+                task = tasks[0] if tasks else None
+                logging.info(f"Received task: {task}")
+                if task:
+                    logging.info(f"Processing task: {task}")
+                    self.process_task(task)
+                else:
+                    logging.info(f"No pending tasks. Sleeping for {self.sleep_time} seconds...")
+                    self.stop_event.wait(self.sleep_time)
+            except Exception as e:
+                logging.info(f"Error fetching tasks: {e}")

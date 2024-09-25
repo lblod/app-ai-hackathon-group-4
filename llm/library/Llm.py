@@ -330,8 +330,17 @@ class LLM:
         # Generate the classification task
         prompt_string, system_message, _, _ = self.generate_summarization_task(text)
 
-        # Generate the response using OpenAI (or any other method)
+        # Generate the response using the model (or any other method)
         response = self.generate_response(system_message, prompt_string, stream=False, json_mode=True)
+
+        return response.choices[0].message.content   
+
+    def summarize_text_custom_prompt(self, text, prompt):
+        # Generate the classification task
+        _, system_message, _, _ = self.generate_summarization_task(text)
+
+        # Generate the response using the model (or any other method)
+        response = self.generate_response(system_message, prompt, stream=False, json_mode=True)
 
         return response.choices[0].message.content
     
@@ -340,7 +349,7 @@ class LLM:
     def process_raw_prompt(self, system_message, prompt_string):
         # Generate the classification task
 
-        # Generate the response using OpenAI (or any other method)
+        # Generate the response using the model (or any other method)
         response = self.generate_response(system_message, prompt_string, stream=False, json_mode=True)
 
         return response.choices[0].message.content
