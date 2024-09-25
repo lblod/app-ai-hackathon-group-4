@@ -28,7 +28,7 @@
                               :as "address")
              (concept :via ,(s-prefix "cidoc:P2_has_type")
                        :as "typology"))
-  :has-many `((annotation :via ,(s-prefix "ext:relatedDecision")
+  :has-many `((besluit :via ,(s-prefix "ext:relatedDecision")
                     :inverse t
                     :as "decisions"))
   :features '(include-uri)
@@ -59,10 +59,15 @@
   :class (s-prefix "besluit:Besluit")
   :properties `(
     (:title :string ,(s-prefix "dct:title"))
+    ;; as the api has different files that may have the same besluit uri...
+    (:besluitUri :url ,(s-prefix "ext:oeBesluitUri"))
     (:download :url ,(s-prefix "ext:dowloadLink")))
   :resource-base (s-url "http://data.lblod.info/id/besluiten/")
   :has-one `((concept :via ,(s-prefix "dct:type")
-                        :as "kind"))
+                        :as "kind")
+             (aanduidingsobject :via ,(s-prefix "ext:relatedDecision")
+                        :inverse t
+                        :as "aanduidingsobject"))
   ;; the uri is the location of the file
   :features '(include-uri)
   :on-path "besluits")
