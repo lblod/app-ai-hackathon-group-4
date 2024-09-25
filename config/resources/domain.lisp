@@ -54,7 +54,9 @@
 
 (define-resource besluit ()
   :class (s-prefix "besluit:Besluit")
-  :properties `((:title :string ,(s-prefix "dct:title")))
+  :properties `(
+    (:title :string ,(s-prefix "dct:title"))
+    (:download :url ,(s-prefix "ext:dowloadLink")))
   :resource-base (s-url "http://data.lblod.info/id/besluiten/")
   :has-one `((concept :via ,(s-prefix "dct:type")
                         :as "kind"))
